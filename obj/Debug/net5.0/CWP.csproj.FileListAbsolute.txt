@@ -1,0 +1,16 @@
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.exe
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.deps.json
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.runtimeconfig.json
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.runtimeconfig.dev.json
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.dll
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\ref\CWP.dll
+C:\Users\LUIS CASANOVA\source\repos\CWP\bin\Debug\net5.0\CWP.pdb
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.csproj.AssemblyReference.cache
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.AssemblyInfoInputs.cache
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.AssemblyInfo.cs
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.csproj.CoreCompileInputs.cache
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.dll
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\ref\CWP.dll
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.pdb
+C:\Users\LUIS CASANOVA\source\repos\CWP\obj\Debug\net5.0\CWP.genruntimeconfig.cache
