@@ -166,7 +166,44 @@ namespace CWP
             }
         }
 
-        private int[] getAdyacenciaVertices(int[] vertice)
+        private int[] getAdyacenciaVertices(int [] vertice)
+        {
+            indice_candidato = -1;
+            List<int> adyacentes = new List<int>();
+          
+            //Recorrer los vértices ya ordenados para verificar los vértices que tienen conexión 
+            //(adyacencia) con ellos
+            for (int i = 0; i < VERTICES_ORDENADOS; i++)
+            {
+                for (int j = 0; j < NUMERO_LITERALES; j++)
+                {
+                    //Verificar que no haya conexión y  que no haya sido visitado
+                    if (MATRIZ_ADYACENCIA[vertice[i], j] == 1 && vertices[j].visitado == false)
+                    {
+                        if (!adyacentes.Contains(j))
+                        {                        
+                            adyacentes.Add(j);
+                        }
+
+                        //Incrementar el valor de vertices adyacentes
+                        vertices[j].offset += 1;
+                    }
+                }
+            }
+            
+            //Recalcular el grado considerando el offset
+            for (int j = 0; j < adyacentes.Count; j++)
+            {                
+                vertices[adyacentes[j]].grado = vertices[adyacentes[j]].grado_org - vertices[adyacentes[j]].offset;
+                vertices[adyacentes[j]].offset = 0;
+
+                //if (vertices[adyacentes[j]].grado == 0) indice_candidato = adyacentes[j];
+            }
+
+            return adyacentes.ToArray();
+        }
+
+        private int[] getAdyacenciaVertices2(int[] vertice)
         {
             indice_candidato = -1;
             List<int> adyacentes = new List<int>();
@@ -200,6 +237,8 @@ namespace CWP
             {
                 vertices[adyacentes[j]].grado = vertices[adyacentes[j]].grado_org - vertices[adyacentes[j]].offset;
                 vertices[adyacentes[j]].offset = 0;
+
+                if (vertices[adyacentes[j]].grado == 0) indice_candidato = adyacentes[j];
             }
 
             return adyacentes.ToArray();
@@ -207,14 +246,10 @@ namespace CWP
 
         private void etiquetar(int u)
         {
-            //Agregar el vertice al ordenamiento, colocar el índice en el objeto
-            //e incrementar la cantidad de vértices ordenados
             ordenamiento[VERTICES_ORDENADOS] = u;
             vertices[u].etiquetar(VERTICES_ORDENADOS);
 
             VERTICES_ORDENADOS++;
-
-            Console.WriteLine(vertices[u].vertice + " -> " + vertices[u].grado);
         }
 
         private Vertice seleccionarVertice(Vertice[] vertices)
@@ -226,35 +261,49 @@ namespace CWP
 
         public void resolver()
         {
-            if (vertices.Length < 1) return;
-
             VERTICES_ORDENADOS = 0;
 
             //Iniciar seleccionando un vértice que tiene un grado bajo
-            Vertice u = seleccionarVertice(vertices);
-            this.etiquetar(u.vertice);
 
-            //Recorrer la cantidad de vértices restantes menos uno (n - 1) puesto que
-            //se definió anteriormente
+            Vertice[] verticesOpc = ordenarVertices((Vertice[])vertices.Clone(), true);
+            this.etiquetar(verticesOpc[0].vertice);
+
+            //Console.WriteLine((char)('A' + verticesOpc[0].vertice) + " -> " + verticesOpc[0].grado);
+            Console.WriteLine(verticesOpc[0].vertice + " -> " + verticesOpc[0].grado);
+
+            //Recorrer la cantidad de vértices restantes menos uno (n - 1)
             while (VERTICES_ORDENADOS < NUMERO_LITERALES)
-            {
+            {                
+
                 //Recorrer los vértices que ya han sido establecidos en el ordenamiento                
-                int[] adyacentes = getAdyacenciaVertices(ordenamiento);
-                
-                //Declarar una variable para guardar los vértices asociados al índice
-                //de los adyacentes
-                List<Vertice> lstVertices = new List<Vertice>();
+                int[] adyacentes = getAdyacenciaVertices2(ordenamiento);
 
-                //Guardar la lista de vértices que tienen adyacencia con los previamente seleccionados
-                for (int k = 0; k < adyacentes.Length; k++)
+                if (indice_candidato < 0)
                 {
-                    lstVertices.Add(vertices[adyacentes[k]]);
-                }
+                    List<Vertice> lstVertices = new List<Vertice>();
 
-                //Transformar la lista en un arreglo
-                Vertice[] vArray = lstVertices.ToArray();
-                Vertice v = seleccionarVertice(vArray);
-                this.etiquetar(v.vertice);
+                    //Guardar la lista de vértices que tienen adyacencia con los previamente seleccionados
+                    for (int k = 0; k < adyacentes.Length; k++)
+                    {
+                        lstVertices.Add(vertices[adyacentes[k]]);
+                        Console.WriteLine($"ADYACENTES {adyacentes[k]}, GRADO = {vertices[adyacentes[k]].grado}");
+                    }
+
+
+                    //Transformar la lista en un arreglo para ordenarlo descendentemente 
+                    Vertice[] array = lstVertices.ToArray();
+                    Vertice[] opcionesDesc = ordenarVertices(array, true);
+
+                    //Obtener el vértice que presente un grado mayor y colocarlo como visitado 
+                    this.etiquetar(opcionesDesc[0].vertice);
+                    Console.WriteLine(opcionesDesc[0].vertice + " -> " + opcionesDesc[0].grado);
+                }
+                else
+                {
+                    //Obtener el vértice que presente un grado mayor y colocarlo como visitado 
+                    this.etiquetar(indice_candidato);
+                    Console.WriteLine(indice_candidato + " -> " + vertices[indice_candidato].grado);
+                }
             }
 
             calcularAnchoCorte();
@@ -269,39 +318,7 @@ namespace CWP
 
         private int contarCortes(int particion)
         {
-            ///Variable para guardar la cantidad de cortes por partición
             int corte = 0;
-
-            for (int u = 0; u < NUMERO_LITERALES; u++)
-            {
-                //Índice de inicio en el vector
-                int indiceInicio = vertices[u].indice_inicio_lista;
-
-                //Cantidad de elementos a partir del índice de inicio
-                int grado = vertices[u].grado_org;
-
-                for (int i = 0; i < grado; i++)
-                {
-                    int v = VERTICES_ADYACENTES[indiceInicio + i];
-
-                    //Ya que el grafo es no dirigido las aristas son dobles, la siguiente
-                    //condición evita revisiones duplicadas
-                    if (v > u)
-                    {
-                        //Sí los vértice se encuentran en lados diferentes de la partición
-                        //entonces se incrementa el número de cortes
-                        if (cruzaParticion(u, v, particion))
-                        {
-                            corte++;
-                        }
-                    }
-                }
-            }
-
-            return corte;
-
-            /*
-             * int corte = 0;
             for (int j = 0; j < NUMERO_LITERALES; j++)
             {
                 for (int k = j + 1; k < NUMERO_LITERALES; k++)
@@ -318,7 +335,6 @@ namespace CWP
                 }
             }
             return corte;
-            */
         }
 
         private void calcularAnchoCorte()

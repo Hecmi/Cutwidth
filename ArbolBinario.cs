@@ -9,7 +9,7 @@ namespace CWP
     public class ArbolIncidencia
     {
         public Nodo raiz;
-        int max_altura_izquierda;
+        int max_altura_izq;
         int max_altura_derecha;
 
         public void agregarNodo(int vertice, int grado)
@@ -42,7 +42,7 @@ namespace CWP
                             nuevoNodo.altura = q.altura + 1;
 
                             if (derecha) max_altura_derecha = nuevoNodo.altura;
-                            else max_altura_izquierda = nuevoNodo.altura;
+                            else max_altura_izq = nuevoNodo.altura;
 
                             q.derecha = nuevoNodo;
                             insertado = true;
@@ -50,16 +50,16 @@ namespace CWP
                     }
                     else
                     {
-                        p = p.izquierda;
+                        p = p.izq;
 
                         if (p == null)
                         {
                             nuevoNodo.altura = q.altura + 1;
 
                             if (derecha) max_altura_derecha = nuevoNodo.altura;
-                            else max_altura_izquierda = nuevoNodo.altura;
+                            else max_altura_izq = nuevoNodo.altura;
 
-                            q.izquierda = nuevoNodo;
+                            q.izq = nuevoNodo;
                             insertado = true;
                         }
                     }
@@ -71,7 +71,7 @@ namespace CWP
         {
             if (raiz != null)
             {
-                RecorridoInorden(raiz.izquierda);
+                RecorridoInorden(raiz.izq);
                 Console.WriteLine($"Grado: {raiz.grado}, Altura: {raiz.altura}");
                 RecorridoInorden(raiz.derecha);
             }
@@ -79,9 +79,9 @@ namespace CWP
 
         public void rotarArbol()
         {
-            int balance = max_altura_derecha - max_altura_izquierda;
+            int balance = max_altura_derecha - max_altura_izq;
             Console.WriteLine("BALANCE = " + balance);
-            Console.WriteLine($"max_altura_derecha: {max_altura_derecha}, max_altura_izquierda: {max_altura_izquierda}");
+            Console.WriteLine($"max_altura_derecha: {max_altura_derecha}, max_altura_izq: {max_altura_izq}");
 
             if (balance == 1 || balance == -1)
             {
@@ -93,7 +93,7 @@ namespace CWP
                 balance = -balance;
                 for (int i = 0; i < balance; i++)
                 {
-                    raiz = RotacionIzquierda(raiz);
+                    raiz = Rotacionizq(raiz);
                 }
             }
             else
@@ -113,23 +113,23 @@ namespace CWP
             }
 
             Nodo nueva_raiz = nodo.derecha;
-            nodo.derecha = nueva_raiz.izquierda;
-            nueva_raiz.izquierda = nodo;
+            nodo.derecha = nueva_raiz.izq;
+            nueva_raiz.izq = nodo;
 
             return nueva_raiz;
         }
 
-        public Nodo RotacionIzquierda(Nodo nodo)
+        public Nodo Rotacionizq(Nodo nodo)
         {
-            if (nodo == null || nodo.izquierda == null)
+            if (nodo == null || nodo.izq == null)
             {
                 return nodo;
             }
 
-            Nodo nueva_raiz = nodo.izquierda;
-            //nodo.izquierda = null;
+            Nodo nueva_raiz = nodo.izq;
+            //nodo.izq = null;
             //nueva_raiz.derecha = nodo;
-            //nodo.izquierda = nueva_raiz.derecha;
+            //nodo.izq = nueva_raiz.derecha;
             //nueva_raiz.derecha = nodo;
 
             return nueva_raiz;
@@ -139,7 +139,7 @@ namespace CWP
     public class Nodo
     {
         public Nodo derecha;
-        public Nodo izquierda;
+        public Nodo izq;
         public int vertice;
         public int grado;
         public int altura;
@@ -149,7 +149,7 @@ namespace CWP
             this.vertice = vertice;
             this.grado = grado;
             this.derecha = null;
-            this.izquierda = null;
+            this.izq = null;
             this.altura = 1;
         }
     }

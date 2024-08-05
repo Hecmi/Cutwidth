@@ -18,6 +18,8 @@ namespace CWP
         public int indice;
         public int ancho_corte;
 
+
+        public int indice_inicio_lista;
         public Vertice(int vertice)
         {
             this.vertice = vertice;
