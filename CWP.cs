@@ -22,15 +22,12 @@ namespace CWP
         Vertice[] vertices;
         int[] ordenamiento;
 
-
-        int indice_candidato;
-
-        public CWP(string ruta_archivo)
+        public CWP()
         {
-            this.parsear_problema(ruta_archivo);            
+
         }
 
-        private void parsear_problema(string ruta_archivo)
+        private bool parsear_problema(string ruta_archivo)
         {
             //Crear el stream reader para leer el archivo
             StreamReader sreader = new StreamReader(ruta_archivo);
@@ -39,52 +36,87 @@ namespace CWP
             string linea;
             string[] elementos_linea;
 
-            int numero_lineas = 0;
-
-            //Leer el archivo
-            while ((linea = sreader.ReadLine()) != null)
+            //Leer la primera línea del archivo que contiene los datos generales del
+            //grafo a resolver
+            if ((linea = sreader.ReadLine()) != null)
             {
+                //Obtener el arreglo separado por un caracter vacío
+                elementos_linea = linea.Split(' ');
+                if (elementos_linea.Length != 3 ||
+                  !int.TryParse(elementos_linea[0], out NUMERO_VERTICES) ||
+                  !int.TryParse(elementos_linea[2], out NUMERO_ARISTAS))
+                {
+                    Console.WriteLine("El formato del encabezado del archivo no es válido.");
+                    return false;
+                }
+
+                ////Configurar las variables para solucionar el problema
+                //NUMERO_VERTICES = int.Parse(elementos_linea[0]);
+                //NUMERO_ARISTAS = int.Parse(elementos_linea[2]);
+
+                //Inicializar las variables
+                MATRIZ_ADYACENCIA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
+                vertices = new Vertice[NUMERO_VERTICES];
+                ordenamiento = new int[NUMERO_VERTICES];
+
+                //Inicializar los objetos de tipo vértice
+                for (int i = 0; i < NUMERO_VERTICES; i++)
+                {
+                    ordenamiento[i] = i;
+                    vertices[i] = new Vertice(i);
+                }
+            }
+
+            //Recorrer las aristas según la cantidad específicada en el encabezado
+            int linea_actual = 0;
+            while (linea_actual < NUMERO_ARISTAS)
+            {
+                linea = sreader.ReadLine();
+
+                if (linea == null)
+                {
+                    Console.WriteLine($"Error de formato, la línea {linea_actual} no existe, sin embargo el número de arsitas especificado indica lo contrario.");
+                    return false;
+                }
+
+                //Obtener los elementos de la línea actual
                 elementos_linea = linea.Split(' ');
 
-                //Sí es la primera línea, es el encabezado
-                if (numero_lineas == 0)
+                //Obtener los índices de los vértices para incrementar el grado
+                int u, v = -1;
+                if (elementos_linea.Length != 2 ||
+                  !int.TryParse(elementos_linea[0], out u) ||
+                  !int.TryParse(elementos_linea[1], out v))
                 {
-                    NUMERO_VERTICES = int.Parse(elementos_linea[0]);
-                    NUMERO_ARISTAS = int.Parse(elementos_linea[2]);
-
-                    //Inicializar las variables
-                    MATRIZ_ADYACENCIA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
-                    vertices = new Vertice[NUMERO_VERTICES];
-                    ordenamiento = new int[NUMERO_VERTICES];
-
-                    //Inicializar los objetos de tipo vértice
-                    for (int i = 0; i < NUMERO_VERTICES; i++)
-                    {
-                        ordenamiento[i] = i;
-                        vertices[i] = new Vertice(i);
-                    }
-                }
-                else
-                {
-                    //Obtener los índices de los vértices para incrementar el grado                   
-                    int u = int.Parse(elementos_linea[0]) - 1;
-                    int v = int.Parse(elementos_linea[1]) - 1;
-
-                    vertices[u].grado += 1;
-                    vertices[v].grado += 1;
-
-                    vertices[u].grado_org += 1;
-                    vertices[v].grado_org += 1;
-
-                    //Incrementar la adyacencia en la matriz
-                    aumentarAdyacencia(u, v);
+                    Console.WriteLine($"El formato de la línea {linea_actual} no es correcto.");
+                    return false;
                 }
 
-                numero_lineas++;
+                u = u - 1;
+                v = v - 1;
+
+                vertices[u].grado += 1;
+                vertices[v].grado += 1;
+
+                vertices[u].grado_org += 1;
+                vertices[v].grado_org += 1;
+
+                //Incrementar la adyacencia en la matriz
+                aumentarAdyacencia(u, v);
+
+
+                linea_actual++;
             }
 
             //Cerrar el lector
             sreader.Close();
+
+            //Si no existen vertices en el arreglo, entonces no hay nada que resolver
+            if (NUMERO_VERTICES < 1 || NUMERO_ARISTAS < 1)
+            {
+                Console.WriteLine("El número de vertices y aristas debe ser mayor que 0.");
+                return false;
+            }
 
             //Calcular la adyacencia entre los vértices para almacenarla
             procesarAdyacencia();
@@ -92,11 +124,8 @@ namespace CWP
             //Mostrar la matriz de adyacencia formada
             Console.WriteLine("MATRIZ DE ADYACENCIA");
             mostrarMatriz(MATRIZ_ADYACENCIA);
-            Console.WriteLine("");
 
-            //mostrarAdyacencia();
-            //Console.WriteLine();
-            //mostrarAdyacencia(9);
+            return true;
         }
 
         private void mostrarAdyacencia()
@@ -252,7 +281,7 @@ namespace CWP
 
             VERTICES_ORDENADOS++;
 
-            Console.WriteLine(vertices[u].vertice + " -> " + vertices[u].grado);
+            //Console.WriteLine(vertices[u].vertice + " -> " + vertices[u].grado);
         }
 
         private Vertice seleccionarVertice(Vertice[] vertices)
@@ -272,10 +301,12 @@ namespace CWP
             }
         }
 
-        public void resolver()
+        public void resolver(string ruta_problema)
         {
-            //Si no existen vertices en el arreglo, entonces no hay nada que resolver
-            if (vertices.Length < 1) return;
+            //Parsear el archivo para obtener la configuración del problema (vértices y aristas)
+            bool parseado = parsear_problema(ruta_problema);
+            if (!parseado) return;
+
             VERTICES_ORDENADOS = 0;
 
             //Repetir el proceso de selección y ordenamiento mientras existan vertices
@@ -337,27 +368,7 @@ namespace CWP
                 }
             }
 
-            return corte;
-
-            /*
-             * int corte = 0;
-            for (int j = 0; j < NUMERO_VERTICES; j++)
-            {
-                for (int k = j + 1; k < NUMERO_VERTICES; k++)
-                {
-                    if (MATRIZ_ADYACENCIA[j, k] > 0)
-                    {
-                        //Verificar si la arista cruza la partición
-                        if (cruzaParticion(j, k, particion))
-                        {
-                            corte++;
-                            //Console.WriteLine($"corte en {j + 1}-{k + 1} en partición {particion}");
-                        }
-                    }
-                }
-            }
-            return corte;
-            */
+            return corte;        
         }
 
         private void calcularAnchoCorte()

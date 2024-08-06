@@ -6,8 +6,14 @@ namespace CWP
     {
         static void Main(string[] args)
         {
-            CWP cwp_solver = new CWP(@"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\4.txt");
-            cwp_solver.resolver();
+            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\4.txt";
+            if (args.Length > 0)
+            {
+                ruta_archivo = args[0];
+            }
+
+            CWP cwp_solver = new CWP();
+            cwp_solver.resolver(ruta_archivo);
             Console.Read();
         }
     }
