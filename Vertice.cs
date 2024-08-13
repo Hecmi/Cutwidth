@@ -8,17 +8,24 @@ namespace CWP
 {
     public class Vertice
     {
+        //Datos generales del vértice
         public int vertice;
         public int grado;
         public int grado_org;
+        public int grado_complejidad;
         
+        //Variables de control del algoritmo
+        //Índice en el ordenamiento
+        public int indice;
+        //Ancho de corte entre el vértice y el anterior en el ordenamiento
+        public int ancho_corte;
+        //Vértices ordenados que contienen una conexión con el objeto actual
         public int offset;
+        //Control de los vértices que pueden ser utilizados
         public bool visitado;
 
-        public int indice;
-        public int ancho_corte;
 
-
+        //Indice de ínicio en el vector que contiene todos los vértices adyacentes
         public int indice_inicio_lista;
         public Vertice(int vertice)
         {

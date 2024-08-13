@@ -9,21 +9,17 @@ namespace CWP
 {
     class CWP
     {
-        int[,] MATRIZ_ADYACENCIA;
-
-        //ARREGLO QUE CONTIENE LA ADYACENCIA DE CADA VÉRTICE
-        //SE FORMA A PARTIR DE LA MATRIZ DE ADYACENCIA
+        //LISTA DE ADYACENCIA ESTÁTICA
         int [] VERTICES_ADYACENTES;
 
-        //VARIABLES DE CONTROL
+        //VARIABLES GENERALES
         int NUMERO_VERTICES;
         int NUMERO_ARISTAS;
+        int[,] MATRIZ_ADYACENCIA;
+
         int VERTICES_ORDENADOS;
 
-        //ARREGLO QUE CONTIENE TODOS LOS VÉRTICES DEL PROBLEMA
         Vertice[] VERTICES;
-
-        //ORDENAMIENTO DE SALIDA (SOLO CONTIENE LOS ÍNDICES DE LOS VÉRTICES)
         int[] ordenamiento;
 
         private bool parsear_problema(string ruta_archivo)
@@ -53,14 +49,7 @@ namespace CWP
                 //NUMERO_VERTICES = int.Parse(elementos_linea[0]);
                 //NUMERO_ARISTAS = int.Parse(elementos_linea[2]);
 
-                //Si no existen vertices en el arreglo, entonces no hay nada que resolver
-                if (NUMERO_VERTICES < 1 || NUMERO_ARISTAS < 1)
-                {
-                    Console.WriteLine("El número de vertices y aristas debe ser mayor que 0.");
-                    return false;
-                }
-
-                //Inicializar las variables para la resolución
+                //Inicializar las variables
                 MATRIZ_ADYACENCIA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
                 VERTICES = new Vertice[NUMERO_VERTICES];
                 ordenamiento = new int[NUMERO_VERTICES];
@@ -90,7 +79,6 @@ namespace CWP
 
                 //Obtener los índices de los vértices para incrementar el grado
                 int u, v = -1;
-
                 if (elementos_linea.Length != 2 ||
                   !int.TryParse(elementos_linea[0], out u) ||
                   !int.TryParse(elementos_linea[1], out v))
@@ -102,8 +90,7 @@ namespace CWP
                 u = u - 1;
                 v = v - 1;
 
-                //Incrementar la adyacencia en la matriz y el grado
-                //de los objetos en el arreglo de vértices
+                //Incrementar la adyacencia en la matriz
                 aumentarAdyacencia(u, v);
 
                 linea_actual++;
@@ -111,6 +98,13 @@ namespace CWP
 
             //Cerrar el lector
             sreader.Close();
+
+            //Si no existen vertices en el arreglo, entonces no hay nada que resolver
+            if (NUMERO_VERTICES < 1 || NUMERO_ARISTAS < 1)
+            {
+                Console.WriteLine("El número de vertices y aristas debe ser mayor que 0.");
+                return false;
+            }
 
             //Calcular la adyacencia entre los vértices para almacenarla
             procesarAdyacencia();
@@ -144,8 +138,7 @@ namespace CWP
         }
         private void procesarAdyacencia()
         {
-            //Definir un contador para insertar en esa posición la conexión (arista)
-            //acertada entre vértices
+            //Definir un contador para insertar en esa posición la conexón acertada entre vértices
             int contador = 0;
 
             //Crear el vector con el total de conexiones * 2 debido a que es un grafo no dirigido
@@ -153,9 +146,9 @@ namespace CWP
 
             for (int i = 0; i < NUMERO_VERTICES; i++)
             {
-                int idx_u = VERTICES[i].vertice;
                 for (int j = 0; j < NUMERO_VERTICES; j++)
                 {
+                    int idx_u = VERTICES[i].vertice;
                     int idx_v = VERTICES[j].vertice;
 
                     //Verificar si existe conexión entre los vértices
@@ -173,13 +166,13 @@ namespace CWP
         }
         private void aumentarAdyacencia(int u, int v)
         {
-            //Incrementar la adyacencia en la matriz según los
+            //Incrementar la adyacencia en la matriz según los 
             //vertices especificados
             if (u != v)
             {
                 VERTICES[u].grado += 1;
                 VERTICES[v].grado += 1;
-
+            
                 VERTICES[u].grado_org += 1;
                 VERTICES[v].grado_org += 1;
 
@@ -211,11 +204,11 @@ namespace CWP
 
             //Obtener el índice de inicio y final del vértice de adyacencia
             int idx_inicio = u.indice_inicio_lista;
-            int idx_final = u.grado_org + idx_inicio;
+            int idx_final = u.grado_org;
 
-            for (int j = idx_inicio; j < idx_final; j++)
+            for (int j = 0; j < idx_final; j++)
             {
-                int idx_v = VERTICES_ADYACENTES[j];
+                int idx_v = VERTICES_ADYACENTES[idx_inicio + j];
                 Vertice v = VERTICES[idx_v];
 
                 //Sí el vértice no ha sido visitado (establecido en el ordenamiento), entonces
@@ -240,12 +233,12 @@ namespace CWP
 
                 //Obtener los índices de inicio y final del vértice u 
                 int idx_inicio = VERTICES[idx_u].indice_inicio_lista;
-                int idx_final = VERTICES[idx_u].grado_org + idx_inicio;
+                int idx_final = VERTICES[idx_u].grado_org;
 
                 //Vértices adyacentes a u
-                for (int i = idx_inicio; i < idx_final; i++)
+                for (int i = 0; i < idx_final; i++)
                 {
-                    int idx_adyacente = VERTICES_ADYACENTES[i];
+                    int idx_adyacente = VERTICES_ADYACENTES[idx_inicio + i];
 
                     //Agregar a la lista los vértices adyacentes si no se encuentran en la misma
                     if (!VERTICES[idx_adyacente].visitado && !adyacentes.Contains(idx_adyacente))
@@ -305,30 +298,13 @@ namespace CWP
 
             return VERTICES[idx_u_menor];
         }
-        private Vertice[] getVerticesNoOrdenados()
-        {        
-            Vertice[] vertices_no_ordenados = new Vertice[NUMERO_VERTICES - VERTICES_ORDENADOS];
-            int contador = 0;
-
-            for (int i = 0; i < NUMERO_VERTICES; i++)
-            {
-                //Verificar que el vértice no se encuentre en el ordenamiento
-                if (!VERTICES[i].visitado)
-                {
-                    vertices_no_ordenados[contador] = VERTICES[i];
-                    contador++;
-                }
-            }
-
-            return vertices_no_ordenados;
-        }
-        private Vertice seleccionarVertice(Vertice[] vertices)
+        private Vertice seleccionarVertice(Vertice[] vertices, int offset)
         {
             //Retornar nulo, si no hay vértices disponibles
             if (vertices.Length == 0) return null;
 
             //Ordenar los vértices de forma descendente 
-            Vertice[] vertices_candidatos = ordenarVertices(vertices, true, 0, vertices.Length - 1);
+            Vertice[] vertices_candidatos = ordenarVertices(vertices, true, 0, vertices.Length - offset - 1);
 
             //En caso que exista más de un vértice con el grado mínimo, entonces seleccionarlo
             //en base a la complejidad total
@@ -374,9 +350,10 @@ namespace CWP
             ordenamiento[pos_y] = ordenamiento[pos_x];
         }
 
-        private bool resolverVerticesSinAdyacencia()
+        private void resolverVerticesSinAdyacencia()
         {
-            bool vertices_etiquetados = false;
+            List<int> idx_vertices = new List<int>();
+
             for(int i = 0; i < VERTICES.Length; i++)
             {
                 //Sí el grado es igual a cero o tiene una conexión consigo mismo
@@ -390,12 +367,15 @@ namespace CWP
                     if (idx_v == VERTICES[i].vertice)
                     {
                         this.etiquetar(idx_v);
-                        vertices_etiquetados = true;
+                        idx_vertices.Add(idx_v);
                     }
                 }
             }
 
-            return vertices_etiquetados;
+            //for (int i = 0; i < idx_vertices.Count; i++)
+            //{
+            //    intercambiar(idx_vertices[i], VERTICES.Length - (i + 1), i, VERTICES.Length - (i + 1));
+            //}
         }
 
         public void resolver(string ruta_problema)
@@ -408,51 +388,26 @@ namespace CWP
 
             //Repetir el proceso de selección y ordenamiento mientras existan vertices
             //que no sean conexos, podrían tener conexión consigo mismo pero no con los demás
-            bool resuelto_vertices_bucle = resolverVerticesSinAdyacencia();
+            resolverVerticesSinAdyacencia();
 
+            //Iniciar seleccionando un vértice que tiene un grado bajo
+            Vertice u = seleccionarVertice(VERTICES, VERTICES_ORDENADOS);
+            this.etiquetar(u.vertice);
 
-            //En caso que se hayan resuelto los vértices que presentan bucles consigo mismo
-            //hay que formar una nueva población excluyendo los mencionados
-            Vertice[] poblacion_inicio = VERTICES;
-            if (resuelto_vertices_bucle)
+            //Recorrer la cantidad de vértices restantes menos uno (n - 1) puesto que
+            //se definió anteriormente
+            while (VERTICES_ORDENADOS < NUMERO_VERTICES)
             {
-                poblacion_inicio = getVerticesNoOrdenados();
+                //Buscar los vértices adyacentes a los ya visitados
+                Vertice[] vertices_adyacentes = getVerticesAdyacentes(ordenamiento);
+
+                //Seleccionar el vértice de menor grado y etiquetarlo (agregarlo al ordenamiento)
+                Vertice v = seleccionarVertice(vertices_adyacentes, 0);
+               
+                this.etiquetar(v.vertice);               
             }
 
-            bool EXISTE_ADYACENCIA = false;
-            int cantidad_repeticiones = 0;
-            while (!EXISTE_ADYACENCIA)
-            {
-                EXISTE_ADYACENCIA = true;
-                if (cantidad_repeticiones > 0) poblacion_inicio = getVerticesNoOrdenados();
-
-                //Iniciar seleccionando un vértice que tiene un grado bajo
-                Vertice u = seleccionarVertice(poblacion_inicio);
-                this.etiquetar(u.vertice);
-
-                //Recorrer la cantidad de vértices restantes menos uno (n - 1) puesto que
-                //se definió anteriormente
-                while (VERTICES_ORDENADOS < NUMERO_VERTICES)
-                {
-                    //Buscar los vértices adyacentes a los ya visitados
-                    Vertice[] vertices_adyacentes = getVerticesAdyacentes(ordenamiento);
-
-                    //Seleccionar el vértice de menor grado y etiquetarlo (agregarlo al ordenamiento)
-                    Vertice v = seleccionarVertice(vertices_adyacentes);
-
-                    if (v != null) this.etiquetar(v.vertice);
-                    else
-                    {
-                        EXISTE_ADYACENCIA = false;
-                        cantidad_repeticiones++;
-                        break;
-                    }
-                }
-            }
-
-
-
-            //Calcular el ancho de corte de cada partición
+            //Calcular el ancho de corte de cada posible partición
             calcularAnchoCorte();
         }
 

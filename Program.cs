@@ -6,7 +6,7 @@ namespace CWP
     {
         static void Main(string[] args)
         {
-            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\4.txt";
+            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\2.txt";
             if (args.Length > 0)
             {
                 ruta_archivo = args[0];
