@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -116,8 +117,8 @@ namespace CWP
             procesarAdyacencia();
 
             //Mostrar la matriz de adyacencia formada
-            Console.WriteLine("MATRIZ DE ADYACENCIA");
-            mostrarMatriz(MATRIZ_ADYACENCIA);
+            //Console.WriteLine("MATRIZ DE ADYACENCIA");
+            //mostrarMatriz(MATRIZ_ADYACENCIA);
             //mostrarAdyacencia(20);
             return true;
         }
@@ -400,6 +401,9 @@ namespace CWP
 
         public void resolver(string ruta_problema)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             //Parsear el archivo para obtener la configuración del problema (vértices y aristas)
             bool parseado = parsear_problema(ruta_problema);
             if (!parseado) return;
@@ -450,10 +454,13 @@ namespace CWP
                 }
             }
 
-
-
             //Calcular el ancho de corte de cada partición
             calcularAnchoCorte();
+
+
+            stopwatch.Stop();
+            Console.WriteLine($"Tiempo de ejecución: {stopwatch.Elapsed.TotalSeconds} segundos");
+
         }
 
         private bool cruzaParticion(int u, int v, int particion)
@@ -522,7 +529,8 @@ namespace CWP
             }
             
             mostrarResultado();
-            Console.WriteLine($"CORTE MÁXIMO = {corteMaximo} EN {(char)('A' + ordenamiento[indiceCorte])}, {(char)('A' + ordenamiento[indiceCorte + 1])}");
+            //Console.WriteLine($"CORTE MÁXIMO = {corteMaximo} EN {(char)('A' + ordenamiento[indiceCorte])}, {(char)('A' + ordenamiento[indiceCorte + 1])}");
+            Console.WriteLine($"CORTE MÁXIMO = {corteMaximo} EN {ordenamiento[indiceCorte]}, {ordenamiento[indiceCorte + 1]}");
         }
 
         //MergeSort
