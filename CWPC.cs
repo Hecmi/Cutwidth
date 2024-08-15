@@ -24,9 +24,15 @@ namespace CWP
 
         //ORDENAMIENTO DE SALIDA (SOLO CONTIENE LOS ÍNDICES DE LOS VÉRTICES)
         int[,] MUESTRA_EVALUADA;
+        int[] CORTES_MUESTRA;
 
+        //CONTROL DE ITERACIONES
         int ITERACION_ACTUAL;
         int MAXIMO_ITERACIONES;
+
+        //SOLUCIONES
+        int IDX_MEJOR;
+        int IDX_PEOR;
 
         public CWPC()
         {
@@ -50,8 +56,8 @@ namespace CWP
                 //Obtener el arreglo separado por un caracter vacío
                 elementos_linea = linea.Split(' ');
                 if (elementos_linea.Length != 3 ||
-                  !int.TryParse(elementos_linea[0], out NUMERO_VERTICES) ||
-                  !int.TryParse(elementos_linea[2], out NUMERO_ARISTAS))
+                    !int.TryParse(elementos_linea[0], out NUMERO_VERTICES) ||
+                    !int.TryParse(elementos_linea[2], out NUMERO_ARISTAS))
                 {
                     Console.WriteLine("El formato del encabezado del archivo no es válido.");
                     return false;
@@ -71,7 +77,9 @@ namespace CWP
                 //Inicializar las variables para la resolución
                 MATRIZ_ADYACENCIA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
                 VERTICES = new Vertice[NUMERO_VERTICES];
-                MUESTRA_EVALUADA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
+
+                MUESTRA_EVALUADA = new int[MAXIMO_ITERACIONES, NUMERO_VERTICES];
+                CORTES_MUESTRA = new int[MAXIMO_ITERACIONES];
 
                 //Inicializar los objetos de tipo vértice
                 for (int i = 0; i < NUMERO_VERTICES; i++)
@@ -99,8 +107,8 @@ namespace CWP
                 int u, v = -1;
 
                 if (elementos_linea.Length != 2 ||
-                  !int.TryParse(elementos_linea[0], out u) ||
-                  !int.TryParse(elementos_linea[1], out v))
+                    !int.TryParse(elementos_linea[0], out u) ||
+                    !int.TryParse(elementos_linea[1], out v))
                 {
                     Console.WriteLine($"El formato de la línea {linea_actual} no es correcto.");
                     return false;
@@ -115,7 +123,10 @@ namespace CWP
 
             //Cerrar el lector
             sreader.Close();
-           
+
+            //Calcular la adyacencia entre los vértices para almacenarla
+            procesarAdyacencia();
+
             return true;
         }
         private void aumentarAdyacencia(int u, int v)
@@ -140,8 +151,36 @@ namespace CWP
                 MATRIZ_ADYACENCIA[u, v]++;
             }
         }
+        private void procesarAdyacencia()
+        {
+            //Definir un contador para insertar en esa posición la conexión (arista)
+            //acertada entre vértices
+            int contador = 0;
 
-        private void generar_solucion_aleatoria(int idx_evaluacion)
+            //Crear el vector con el total de conexiones * 2 debido a que es un grafo no dirigido
+            VERTICES_ADYACENTES = new int[NUMERO_ARISTAS + NUMERO_ARISTAS];
+
+            for (int i = 0; i < NUMERO_VERTICES; i++)
+            {
+                int idx_u = VERTICES[i].vertice;
+                for (int j = 0; j < NUMERO_VERTICES; j++)
+                {
+                    int idx_v = VERTICES[j].vertice;
+
+                    //Verificar si existe conexión entre los vértices
+                    if (MATRIZ_ADYACENCIA[idx_u, idx_v] == 1)
+                    {
+                        //Si existe conexión colocarla en el índice incremental (contador)
+                        VERTICES_ADYACENTES[contador] = VERTICES[j].vertice;
+                        contador++;
+                    }
+                }
+
+                //Colocar el valor al índice de inicio en la lista de adyacencia
+                if (i + 1 < NUMERO_VERTICES) VERTICES[i + 1].indice_inicio_lista = contador;
+            }
+        }
+        private void generar_solucion_aleatoria(int idx_evaluacion, float alfa)
         {
             List<int> particion1 = new List<int>();
             List<int> particion2 = new List<int>();
@@ -149,7 +188,7 @@ namespace CWP
             Random rnd = new Random();
             for (int i = 0; i < NUMERO_VERTICES; i++)
             {
-                if (rnd.NextDouble() < 0.5)
+                if (rnd.NextDouble() < alfa)
                     particion1.Add(i);
                 else
                     particion2.Add(i);
@@ -185,58 +224,46 @@ namespace CWP
 
             return corteMaximo;
         }
-
-        private int calcularAnchoCorte(int[] solucion)
-        {
-            int corteMaximo = 0;
-            int corteActual = 0;
-            int indiceCorte = 0;
-
-            for (int p = 0; p < NUMERO_VERTICES; p++)
-            {
-                corteActual = evaluarParticion(solucion, p);
-
-                if (corteActual > corteMaximo)
-                {
-                    corteMaximo = corteActual;
-                    indiceCorte = p;
-                }
-            }
-
-            return corteMaximo;
-        }
-        private int evaluarParticion(int [] solucion, int p)
+        private int evaluarParticion(int idx_muestra, int particion)
         {
             int corte = 0;
             for (int u = 0; u < NUMERO_VERTICES; u++)
             {
-                for (int v = u + 1; v < NUMERO_VERTICES; v++)
+                //Índice de inicio en el vector
+                int indiceInicio = VERTICES[u].indice_inicio_lista;
+
+                //Cantidad de elementos a partir del índice de inicio
+                int grado = VERTICES[u].grado_org;
+
+                for (int i = 0; i < grado; i++)
                 {
-                    if (MATRIZ_ADYACENCIA[u, v] > 0 && cruzaParticion(solucion, u, v, p))
+                    int v = VERTICES_ADYACENTES[indiceInicio + i];
+
+                    //Ya que el grafo es no dirigido las aristas son dobles, la siguiente
+                    //condición evita realizar revisiones dobles
+                    if (v > u && cruzaParticion(idx_muestra, u, v, particion))
                     {
+                        //Sí los vértice se encuentran en lados diferentes de la partición
+                        //entonces se incrementa el número de cortes                        
                         corte++;
                     }
                 }
             }
-
             return corte;
-        }
+            
+            //int corte = 0;
+            //for (int u = 0; u < NUMERO_VERTICES; u++)
+            //{
+            //    for (int v = u + 1; v < NUMERO_VERTICES; v++)
+            //    {
+            //        if (MATRIZ_ADYACENCIA[u, v] > 0 && cruzaParticion(idx_muestra, u, v, p))
+            //        {
+            //            corte++;
+            //        }
+            //    }
+            //}
 
-        private int evaluarParticion(int idx_muestra, int p)
-        {
-            int corte = 0;
-            for (int u = 0; u < NUMERO_VERTICES; u++)
-            {
-                for (int v = u + 1; v < NUMERO_VERTICES; v++)
-                {
-                    if (MATRIZ_ADYACENCIA[u, v] > 0 && cruzaParticion(idx_muestra, u, v, p))
-                    {
-                        corte++;
-                    }
-                }
-            }
-
-            return corte;
+            //return corte;
         }
 
         private bool cruzaParticion(int idx_muestra, int u, int v, int particion)
@@ -245,14 +272,8 @@ namespace CWP
             return (MUESTRA_EVALUADA[idx_muestra, u] < particion && MUESTRA_EVALUADA[idx_muestra, v] >= particion)
                 || (MUESTRA_EVALUADA[idx_muestra, v] < particion && MUESTRA_EVALUADA[idx_muestra, u] >= particion);
         }
-        private bool cruzaParticion(int[] solucion, int u, int v, int particion)
-        {
-            //Verificar si u y v están en diferentes particiones
-            return (solucion[u] < particion && solucion[v] >= particion)
-                || (solucion[v] < particion && solucion[u] >= particion);
-        }
 
-        private void intercambiar_vertices(int[] solucion)
+        private void intercambiar_vertices(int idx)
         {
             Random rnd = new Random();
 
@@ -265,19 +286,44 @@ namespace CWP
             } while (idx1 == idx2);
 
             //Intercambiar los vértices
-            int temp = solucion[idx1];
-            solucion[idx1] = solucion[idx2];
-            solucion[idx2] = temp;
+            int temp = MUESTRA_EVALUADA[idx, idx1];
+            MUESTRA_EVALUADA[idx, idx1] = MUESTRA_EVALUADA[idx, idx2];
+            MUESTRA_EVALUADA[idx, idx2] = temp;
         }
 
-        private int[] obtener_fila(int fila)
+       
+        private void GRASP()
         {
-            int[] solucion = new int[NUMERO_VERTICES];
-            for (int i = 0; i < NUMERO_VERTICES; i++)
+            float alpha = 0.5f;
+            float factor_crecimiento = 0.8f;
+            float factor_decaimiento = 0.6f;
+
+            int mejor_corte = CORTES_MUESTRA[ITERACION_ACTUAL - 1];
+
+            while(ITERACION_ACTUAL < MAXIMO_ITERACIONES)
             {
-                solucion[i] = MUESTRA_EVALUADA[fila, i];
+                generar_solucion_aleatoria(ITERACION_ACTUAL, alpha);
+                intercambiar_vertices(ITERACION_ACTUAL);
+
+                //Evaluar la solución
+                CORTES_MUESTRA[ITERACION_ACTUAL] = calcularAnchoCorte(ITERACION_ACTUAL);
+
+                // Actualizar la mejor solución encontrada
+                if (CORTES_MUESTRA[ITERACION_ACTUAL] < CORTES_MUESTRA[IDX_MEJOR])
+                {
+                    alpha *= factor_crecimiento;
+                    mejor_corte = CORTES_MUESTRA[ITERACION_ACTUAL];
+                    IDX_MEJOR = ITERACION_ACTUAL;
+                }
+
+                if (CORTES_MUESTRA[ITERACION_ACTUAL] > CORTES_MUESTRA[IDX_MEJOR])
+                {
+                    alpha *= factor_decaimiento;
+                    IDX_PEOR = ITERACION_ACTUAL;
+                }
+
+                ITERACION_ACTUAL++;                
             }
-            return solucion;
         }
 
         private void simulated_annealing()
@@ -287,41 +333,67 @@ namespace CWP
             double tasa_enfriamiento = 0.75;
             double temp_minima = 0.10;
 
-            int iteracion = 0;
+            int mejorCorte = CORTES_MUESTRA[ITERACION_ACTUAL- 1];
+            int IDX_TEMP = 0;
 
-            int mejorCorte = calcularAnchoCorte(ITERACION_ACTUAL - 1);
-            int[] mejorSolucion = obtener_fila(ITERACION_ACTUAL - 1);
-
-            while (temperatura > temp_minima || iteracion < MAXIMO_ITERACIONES)
+            while (
+                temperatura > temp_minima &&
+                ITERACION_ACTUAL < MAXIMO_ITERACIONES)
             {
-                iteracion++;
-
-                // Generar una solución vecina
-                int[] nuevaSolucion = (int[])mejorSolucion.Clone();
-                intercambiar_vertices(nuevaSolucion);
-
-                // Evaluar la nueva solución
-                int nuevoCorte = calcularAnchoCorte(nuevaSolucion);
-
-                // Decidir si aceptar la nueva solución
-                if (nuevoCorte < mejorCorte || rnd.NextDouble() < Math.Exp((mejorCorte - nuevoCorte) / temperatura))
+            
+                //Colocar inicialmente para la nueva solución los vértices iguales
+                //a la solución temporal
+                for (int i = 0; i < NUMERO_VERTICES; i++)
                 {
-                    mejorCorte = nuevoCorte;
-                    mejorSolucion = nuevaSolucion;
+                    MUESTRA_EVALUADA[ITERACION_ACTUAL, i] = MUESTRA_EVALUADA[IDX_TEMP, i];
                 }
 
-                // Reducir la temperatura
-                temperatura *= tasa_enfriamiento;
-            }
+                //Generar una solución vecina
+                intercambiar_vertices(ITERACION_ACTUAL);
 
-            //Guardar la mejor solución encontrada
-            for (int i = 0; i < NUMERO_VERTICES; i++)
-            {
-                MUESTRA_EVALUADA[ITERACION_ACTUAL, i] = mejorSolucion[i];
+                //Evaluar la nueva solución
+                CORTES_MUESTRA[ITERACION_ACTUAL] = calcularAnchoCorte(ITERACION_ACTUAL);
+
+                //Guardar el índice de la mejor combinación
+                if (CORTES_MUESTRA[ITERACION_ACTUAL] < CORTES_MUESTRA[IDX_MEJOR])
+                {
+                    mejorCorte = CORTES_MUESTRA[ITERACION_ACTUAL];
+                    IDX_TEMP = ITERACION_ACTUAL;
+                    IDX_MEJOR = ITERACION_ACTUAL;
+                }
+
+                //Guardar el índice de la peor combinación
+                if (CORTES_MUESTRA[ITERACION_ACTUAL] > CORTES_MUESTRA[IDX_PEOR])
+                {                    
+                    IDX_PEOR = ITERACION_ACTUAL;
+                }
+
+                //Decidir si aceptar la nueva solución para explorar combinaciones vecinas
+                if (rnd.NextDouble() < Math.Exp((mejorCorte - CORTES_MUESTRA[ITERACION_ACTUAL]) / temperatura))
+                {
+                    mejorCorte = CORTES_MUESTRA[ITERACION_ACTUAL];
+                    IDX_TEMP = ITERACION_ACTUAL;
+                }
+
+                //Reducir la temperatura
+                temperatura *= tasa_enfriamiento;
+                ITERACION_ACTUAL++;
             }
         }
 
-        public void resolver(string ruta_archivo)
+        public void resolver(string ruta_archivo, string metodo)
+        {
+            if (metodo == "grasp")
+            {
+                resolver_por_grasp(ruta_archivo);
+            }
+            else
+            {
+                resolver_por_sa(ruta_archivo);
+            }
+        }
+
+        private void resolver_por_grasp(string ruta_archivo)
         {
             if (!parsear_problema(ruta_archivo))
             {
@@ -329,29 +401,34 @@ namespace CWP
                 return;
             }
 
-            int idx_mejor_solucion = 0;
-            int corte_mejor_solucion = 0;            
-
-            generar_solucion_aleatoria(ITERACION_ACTUAL);
-            corte_mejor_solucion = calcularAnchoCorte(ITERACION_ACTUAL);
+            generar_solucion_aleatoria(ITERACION_ACTUAL, 0.5f);
+            CORTES_MUESTRA[ITERACION_ACTUAL] = calcularAnchoCorte(ITERACION_ACTUAL);
+            IDX_MEJOR = 0;
             ITERACION_ACTUAL++;
 
-            while (ITERACION_ACTUAL < 2)
+            GRASP();
+
+            mostrar_solucion(IDX_MEJOR);
+            mostrar_solucion(IDX_PEOR);
+        }
+
+        private void resolver_por_sa(string ruta_archivo)
+        {
+            if (!parsear_problema(ruta_archivo))
             {
-                simulated_annealing();
-                int ancho_corte = calcularAnchoCorte(ITERACION_ACTUAL);
-
-                if (ancho_corte < corte_mejor_solucion)
-                {
-                    corte_mejor_solucion = ancho_corte;
-                    idx_mejor_solucion = ITERACION_ACTUAL;
-                }
-
-                ITERACION_ACTUAL++;
+                Console.WriteLine("ERROR");
+                return;
             }
 
-            mostrar_solucion(idx_mejor_solucion);
-            Console.WriteLine(corte_mejor_solucion + "");
+            generar_solucion_aleatoria(ITERACION_ACTUAL, 0.5f);
+            CORTES_MUESTRA[ITERACION_ACTUAL] = calcularAnchoCorte(ITERACION_ACTUAL);
+            IDX_MEJOR = 0;
+            ITERACION_ACTUAL++;
+
+            simulated_annealing();
+
+            mostrar_solucion(IDX_MEJOR);
+            mostrar_solucion(IDX_PEOR);
         }
 
 
@@ -361,6 +438,7 @@ namespace CWP
             {
                 Console.WriteLine(MUESTRA_EVALUADA[idx, i] + "");
             }
+            Console.WriteLine($"CORTE OBTENIDO = {CORTES_MUESTRA[idx]}");
         }
     }
 }

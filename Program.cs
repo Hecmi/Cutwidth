@@ -14,14 +14,14 @@ namespace CWP
                 ruta_archivo = args[0];
             }
 
-            CWP cwp_solver = new CWP();
-            cwp_solver.resolver(ruta_archivo);
+            //CWP cwp_solver = new CWP();
+            //cwp_solver.resolver(ruta_archivo);
 
             Console.WriteLine("");
 
 
             CWPC cwp_solver_c = new CWPC();
-            cwp_solver_c.resolver(ruta_archivo);
+            cwp_solver_c.resolver(ruta_archivo, "grasp");
             
             Console.Read();
         }
