@@ -135,19 +135,19 @@ namespace CWP
             //vertices especificados
             if (u != v)
             {
+                VERTICES[u].peso += 1;
+                VERTICES[v].peso += 1;
+
                 VERTICES[u].grado += 1;
                 VERTICES[v].grado += 1;
-
-                VERTICES[u].grado_org += 1;
-                VERTICES[v].grado_org += 1;
 
                 MATRIZ_ADYACENCIA[u, v]++;
                 MATRIZ_ADYACENCIA[v, u]++;
             }
             else
             {
+                VERTICES[u].peso += 1;
                 VERTICES[u].grado += 1;
-                VERTICES[u].grado_org += 1;
                 MATRIZ_ADYACENCIA[u, v]++;
             }
         }
@@ -233,7 +233,7 @@ namespace CWP
                 int indiceInicio = VERTICES[u].indice_inicio_lista;
 
                 //Cantidad de elementos a partir del índice de inicio
-                int grado = VERTICES[u].grado_org;
+                int grado = VERTICES[u].grado;
 
                 for (int i = 0; i < grado; i++)
                 {
@@ -329,7 +329,7 @@ namespace CWP
         private void simulated_annealing()
         {
             Random rnd = new Random();
-            double temperatura = 100.0;
+            double temperatura = 10000.0;
             double tasa_enfriamiento = 0.75;
             double temp_minima = 0.10;
 
@@ -409,7 +409,7 @@ namespace CWP
             GRASP();
 
             mostrar_solucion(IDX_MEJOR);
-            mostrar_solucion(IDX_PEOR);
+            //mostrar_solucion(IDX_PEOR);
         }
 
         private void resolver_por_sa(string ruta_archivo)
@@ -428,7 +428,7 @@ namespace CWP
             simulated_annealing();
 
             mostrar_solucion(IDX_MEJOR);
-            mostrar_solucion(IDX_PEOR);
+            //mostrar_solucion(IDX_PEOR);
         }
 
 
