@@ -32,7 +32,7 @@ namespace CWP
 
         //VARIABLES PARA EL CONTROL DE SALIDAS
         bool MOSTRAR_ORDENAMIENTO;
-        int CORTE_MAXIMO;
+        double CORTE_MAXIMO;
         double TIEMPO_RESOLUCION;
 
         public CWP(bool mostrar_ordenamiento)
@@ -241,9 +241,9 @@ namespace CWP
                 Console.Write("\n");
             }
         }
-        private int calcularGradoComplejidad(int idx_u)
+        private double calcularGradoComplejidad(int idx_u)
         {
-            int complejidad = 0;
+            double complejidad = 0;
             Vertice u = VERTICES[idx_u];
 
             //Obtener el índice de inicio y final del vértice de adyacencia
@@ -328,7 +328,7 @@ namespace CWP
         }
         private Vertice seleccionarVerticeComplejidad(Vertice[] vertices_candidatos, int cantidad_evaluar)
         {
-            int complejidad_menor = 0;
+            double complejidad_menor = 0;
             int idx_u_menor = 0;
 
             //Calcular la complejidad total de adyacencia de los vértices recibidos
@@ -380,7 +380,7 @@ namespace CWP
             int mismo_grado = 0;       
 
             //El vértice que tiene el menor grado es el de la posición cero
-            int grado_menor = vertices_candidatos[0].peso;
+            double grado_menor = vertices_candidatos[0].peso;
 
             //Recorrer cada vértice del arreglo para verificar si comparten el mismo grado
             for (int i = 1; i < vertices_candidatos.Length; i++)

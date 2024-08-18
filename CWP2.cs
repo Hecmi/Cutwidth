@@ -12,13 +12,8 @@ namespace CWP
     {
         //MATRIZ DE ADYACENCIA (CONTIENE EL PESO DE LAS CONEXIONES 
         //ENTRE VÉRTICES)
-        int[,] MATRIZ_ADYACENCIA;
-
-        //ARREGLO QUE CONTIENE LA ADYACENCIA DE CADA VÉRTICE
-        //SE FORMA A PARTIR DE LA MATRIZ DE ADYACENCIA
-        //(SIMULACIÓN DE LISTA DE ADYACENCIA)
-        int[] VERTICES_ADYACENTES;
-
+        Dictionary<int, Dictionary<int, double>> MATRIZ_ADYACENCIA;
+        
         //VARIABLES DE CONTROL
         int NUMERO_VERTICES;
         int NUMERO_ARISTAS;
@@ -30,16 +25,42 @@ namespace CWP
         //ORDENAMIENTO DE SALIDA (SOLO CONTIENE LOS ÍNDICES DE LOS VÉRTICES)
         int[] ORDENAMIENTO;
 
-        //VARIABLES PARA EL CONTROL DE SALIDAS
-        bool MOSTRAR_ORDENAMIENTO;
-        int CORTE_MAXIMO;
+        //VARIABLES DE LECTURA DEL ARCHIVO
+        char DELIMITADOR;
+
+        //VARIABLES DE SALIDA
+        int IDX_MEJOR;
+        double MEJOR_CORTE;
+        double CORTE_MAXIMO;
         double TIEMPO_RESOLUCION;
+
+        //VARIABLES DEFINIDAS POR EL USUARIO
+        bool MOSTRAR_ORDENAMIENTO;
+        bool GUARDAR_SALIDA;
+        string RUTA_ENTRADA;
 
         public CWP2(bool mostrar_ordenamiento)
         {
             MOSTRAR_ORDENAMIENTO = mostrar_ordenamiento;
+            DELIMITADOR = ' ';
+            GUARDAR_SALIDA = false;
+        }
+        public CWP2(bool mostrar_ordenamiento, char delimitador)
+        {
+            MOSTRAR_ORDENAMIENTO = mostrar_ordenamiento;
+            DELIMITADOR = delimitador;
+            GUARDAR_SALIDA = false;
+        }
+        public CWP2(bool mostrar_ordenamiento, char delimitador, bool guardar_salida)
+        {
+            MOSTRAR_ORDENAMIENTO = mostrar_ordenamiento;
+            DELIMITADOR = delimitador;
+            GUARDAR_SALIDA = guardar_salida;
         }
 
+        public int get_NumeroVertices() { return NUMERO_VERTICES; }
+        public int get_NumeroAristas() { return NUMERO_ARISTAS; }
+        public double get_TiempoResolucion() { return TIEMPO_RESOLUCION; }
         public override string ToString()
         {
             return $"{NUMERO_VERTICES};{NUMERO_ARISTAS};{TIEMPO_RESOLUCION};{CORTE_MAXIMO}";
@@ -47,6 +68,15 @@ namespace CWP
 
         private bool parsear_problema(string ruta_archivo)
         {
+            //Verificar que la ruta exista
+            if (!File.Exists(ruta_archivo))
+            {
+                Console.WriteLine($"La ruta del archivo especificado no existe.");
+                return false;
+            }
+
+            RUTA_ENTRADA = ruta_archivo;
+
             //Crear el stream reader para leer el archivo
             StreamReader sreader = new StreamReader(ruta_archivo);
 
@@ -59,7 +89,7 @@ namespace CWP
             if ((linea = sreader.ReadLine()) != null)
             {
                 //Obtener el arreglo separado por un caracter vacío
-                elementos_linea = linea.Split(' ');
+                elementos_linea = linea.Split(DELIMITADOR);
                 if (elementos_linea.Length != 3 ||
                   !int.TryParse(elementos_linea[0], out NUMERO_VERTICES) ||
                   !int.TryParse(elementos_linea[2], out NUMERO_ARISTAS))
@@ -76,13 +106,15 @@ namespace CWP
                 }
 
                 //Inicializar las variables para la resolución
-                MATRIZ_ADYACENCIA = new int[NUMERO_VERTICES, NUMERO_VERTICES];
+                MATRIZ_ADYACENCIA = new Dictionary<int, Dictionary<int, double>>();
                 VERTICES = new Vertice[NUMERO_VERTICES];
                 ORDENAMIENTO = new int[NUMERO_VERTICES];
 
                 //Inicializar los objetos de tipo vértice
                 for (int i = 0; i < NUMERO_VERTICES; i++)
                 {
+                    MATRIZ_ADYACENCIA[i] = new Dictionary<int, double>();                    
+
                     ORDENAMIENTO[i] = i;
                     VERTICES[i] = new Vertice(i);
                 }
@@ -104,7 +136,7 @@ namespace CWP
                 }
 
                 //Obtener los elementos de la línea actual
-                elementos_linea = linea.Split(' ');
+                elementos_linea = linea.Split(DELIMITADOR);
 
                 //Obtener los índices de los vértices para incrementar el grado
                 int u, v = -1;
@@ -123,12 +155,12 @@ namespace CWP
                         return false;
                     }
 
-                    if (elementos_linea.Length == 3 &&
-                      !int.TryParse(elementos_linea[2], out peso))
-                    {
-                        Console.WriteLine($"El formato del peso en la línea {linea_actual} no es correcto.");
-                        return false;
-                    }
+                    //if (elementos_linea.Length == 3 &&
+                    //  !int.TryParse(elementos_linea[2], out peso))
+                    //{
+                    //    Console.WriteLine($"El formato del peso en la línea {linea_actual} no es correcto.");
+                    //    return false;
+                    //}
                 }
                 else
                 {
@@ -152,21 +184,20 @@ namespace CWP
             //Cerrar el lector
             sreader.Close();
 
-            //Procesar la adyacencia para transformarla en un vector que simula
-            //una lista de adyacencia
-            procesarAdyacencia();
-
             return true;
         }
         private void mostrarAdyacencia()
         {
             //Recorrer el vertice seleccionado con la cantidad de grados que tiene
             //la iteración empieza desde el valor guardado
-            for (int x = 0; x < NUMERO_VERTICES; x++)
+            for (int u = 0; u < NUMERO_VERTICES; u++)
             {
-                for (int i = 0; i < VERTICES[x].grado; i++)
+                Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[u];
+                foreach (var conexion in adyacencia_u)
                 {
-                    Console.WriteLine($"PARA VÉRTICE {VERTICES[x].vertice}, {VERTICES_ADYACENTES[i + VERTICES[x].indice_inicio_lista]}");
+                    int v = conexion.Key;
+                    double peso = conexion.Value;
+                    Console.WriteLine($"Vértice {u} conectado con vértice {v} con peso {peso}");
                 }
             }
         }
@@ -174,38 +205,12 @@ namespace CWP
         {
             //Recorrer el vertice seleccionado con la cantidad de grados que tiene
             //la iteración empieza desde el valor guardado
-            for (int i = 0; i < VERTICES[u].grado; i++)
+            Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[u];
+            foreach (var conexion in adyacencia_u)
             {
-                Console.WriteLine($"PARA VÉRTICE {VERTICES[u].vertice}, {VERTICES_ADYACENTES[i + VERTICES[u].indice_inicio_lista]}");
-            }
-        }
-        private void procesarAdyacencia()
-        {
-            //Definir un contador para insertar en esa posición la conexión (arista)
-            //acertada entre vértices
-            int contador = 0;
-
-            //Crear el vector con el total de conexiones * 2 debido a que es un grafo no dirigido
-            VERTICES_ADYACENTES = new int[NUMERO_ARISTAS + NUMERO_ARISTAS];
-
-            for (int i = 0; i < NUMERO_VERTICES; i++)
-            {
-                int idx_u = VERTICES[i].vertice;
-                for (int j = 0; j < NUMERO_VERTICES; j++)
-                {
-                    int idx_v = VERTICES[j].vertice;
-
-                    //Verificar si existe conexión entre los vértices
-                    if (MATRIZ_ADYACENCIA[idx_u, idx_v] > 0)
-                    {
-                        //Si existe conexión colocarla en el índice incremental (contador)
-                        VERTICES_ADYACENTES[contador] = VERTICES[j].vertice;
-                        contador++;
-                    }
-                }
-
-                //Colocar el valor al índice de inicio en la lista de adyacencia
-                if (i + 1 < NUMERO_VERTICES) VERTICES[i + 1].indice_inicio_lista = contador;
+                int v = conexion.Key;
+                double peso = conexion.Value;
+                Console.WriteLine($"Vértice {u} conectado con vértice {v} con peso {peso}");
             }
         }
         private void aumentarAdyacencia(int u, int v, int peso)
@@ -218,14 +223,14 @@ namespace CWP
                 VERTICES[u].incrementar_adyacencia(peso);
                 VERTICES[v].incrementar_adyacencia(peso);
 
-                MATRIZ_ADYACENCIA[u, v] += peso;
-                MATRIZ_ADYACENCIA[v, u] += peso;
+                MATRIZ_ADYACENCIA[u][v] = peso;
+                MATRIZ_ADYACENCIA[v][u] = peso;
             }
             else
             {
                 VERTICES[u].incrementar_adyacencia(peso);
 
-                MATRIZ_ADYACENCIA[u, v] += peso;
+                MATRIZ_ADYACENCIA[u][v] = peso;
             }
         }
         private void mostrarMatriz(int[,] matriz)
@@ -239,22 +244,17 @@ namespace CWP
                 Console.Write("\n");
             }
         }
-        private int calcularGradoComplejidad(int idx_u)
+        private double calcularGradoComplejidad(int idx_u)
         {
-            int complejidad = 0;
+            double complejidad = 0;
             Vertice u = VERTICES[idx_u];
 
-            //Obtener el índice de inicio y final del vértice de adyacencia
-            int idx_inicio = u.indice_inicio_lista;
-            int idx_final = u.grado + idx_inicio;
-
-            for (int j = idx_inicio; j < idx_final; j++)
+            Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[idx_u];
+            foreach (var conexion in adyacencia_u)
             {
-                int idx_v = VERTICES_ADYACENTES[j];
-                Vertice v = VERTICES[idx_v];
+                int idx_v = conexion.Key;
 
-                //Sí el vértice no ha sido visitado (establecido en el ordenamiento), entonces
-                //aumentar el grado de complejidad del vértice que se está evaluando
+                Vertice v = VERTICES[idx_v];
                 if (!v.visitado)
                 {
                     complejidad += v.peso;
@@ -275,25 +275,29 @@ namespace CWP
                 //Obtener el índice de los vértices enviados (u)
                 int idx_u = vertice[u];
 
-                //Obtener los índices de inicio y final del vértice u 
-                int idx_inicio = VERTICES[idx_u].indice_inicio_lista;
-                int idx_final = VERTICES[idx_u].grado + idx_inicio;
+                //Verificar si el vértice u ya ha sido ordenado en conjunto a todos sus
+                //adyacentes
+                if (VERTICES[idx_u].completado) continue; 
 
-                //Vértices adyacentes a u
-                for (int i = idx_inicio; i < idx_final; i++)
+                Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[idx_u];
+                foreach (var conexion in adyacencia_u)
                 {
-                    int idx_adyacente = VERTICES_ADYACENTES[i];
+                    int idx_v = conexion.Key;
+                    double peso = conexion.Value;
+                    Vertice v = VERTICES[idx_v];
 
-                    //Agregar a la lista los vértices adyacentes si no se encuentran en la misma
-                    if (!VERTICES[idx_adyacente].visitado && !adyacentes.Contains(idx_adyacente))
+                    //Verificar si el vértice v ya ha sido ordenado en conjunto a todos sus
+                    //adyacentes
+                    if (v.completado) continue;
+
+                    if (!v.visitado && !adyacentes.Contains(idx_v))
                     {
-                        adyacentes.Add(idx_adyacente);
+                        adyacentes.Add(idx_v);
                     }
 
                     //Incrementar el offset para restarlo posteriormente al grado
                     //de cada vértice adyacente
-                    //VERTICES[idx_adyacente].offset += 1;
-                    VERTICES[idx_adyacente].offset += MATRIZ_ADYACENCIA[idx_u, idx_adyacente];
+                    VERTICES[idx_v].offset += peso;
                 }
             }
 
@@ -315,18 +319,70 @@ namespace CWP
 
             return vertices_adyacentes;
         }
-        private void etiquetar(int u)
+
+        private void recalcularCorte(int idx_u)
         {
+            //Obtener los vértices adyacentes a u
+            Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[idx_u];
+
+            //Recorrer la adyacencia para recalcular el corte a partir del índice
+            //de las conexiones
+            foreach (var conexion in adyacencia_u)
+            {
+                //Obtener el vértice v
+                int idx_v = conexion.Key;
+                Vertice v = VERTICES[idx_v];
+
+                //Verificar si ya ha sido etiquetado en conjunto a su adyacencia, para no 
+                //seguir con el proceso
+                if (v.completado) continue;
+
+                //Verificar que esté en el ordenamiento (etiquetado)
+                if (v.visitado)
+                { 
+                    //El índice de inicio, donde se empezará a recalcular es el 
+                    //del vértice adyacente hasta u (v...u)
+                    int idx_inicio = v.indice;
+
+                    //Disminuir el grado del vértice que presenta la conexión
+                    //y al que está conectado (v...u)
+                    VERTICES[idx_u].disminuirGrado();
+                    VERTICES[idx_v].disminuirGrado();
+
+                    for (int i = idx_inicio; i < VERTICES_ORDENADOS; i++)
+                    {
+                        VERTICES[ORDENAMIENTO[i]].ancho_corte += conexion.Value;
+
+                        //Al incrementar el ancho de corte, determinar si es el corte que 
+                        //representa el valor máximo
+                        if (VERTICES[ORDENAMIENTO[i]].ancho_corte > MEJOR_CORTE)
+                        {
+                            IDX_MEJOR = i;
+                            MEJOR_CORTE = VERTICES[ORDENAMIENTO[i]].ancho_corte;
+                        }
+                    }
+                }
+            }
+        }
+        private void etiquetar(int idx_u)
+        {
+            //Console.WriteLine($"{VERTICES_ORDENADOS} {idx_u}");
+
             //Agregar el vertice al ordenamiento, colocar el índice en el objeto
             //e incrementar la cantidad de vértices ordenados
-            ORDENAMIENTO[VERTICES_ORDENADOS] = u;
-            VERTICES[u].etiquetar(VERTICES_ORDENADOS);
+            ORDENAMIENTO[VERTICES_ORDENADOS] = idx_u;
+            VERTICES[idx_u].etiquetar(VERTICES_ORDENADOS);
+
+            //Recalcular el ancho de corte debido a la inserción del nuevo vértice en 
+            //el ordenamiento
+            recalcularCorte(idx_u);
 
             VERTICES_ORDENADOS++;
         }
+
         private Vertice seleccionarVerticeComplejidad(Vertice[] vertices_candidatos, int cantidad_evaluar)
         {
-            int complejidad_menor = 0;
+            double complejidad_menor = 0;
             int idx_u_menor = 0;
 
             //Calcular la complejidad total de adyacencia de los vértices recibidos
@@ -378,7 +434,7 @@ namespace CWP
             int mismo_grado = 0;
 
             //El vértice que tiene el menor grado es el de la posición cero
-            int grado_menor = vertices_candidatos[0].peso;
+            double grado_menor = vertices_candidatos[0].peso;
 
             //Recorrer cada vértice del arreglo para verificar si comparten el mismo grado
             for (int i = 1; i < vertices_candidatos.Length; i++)
@@ -406,7 +462,6 @@ namespace CWP
                 return seleccionarVerticeComplejidad(vertices_candidatos, mismo_grado + 1);
             }
         }
-
         private bool resolverVerticesSinAdyacencia()
         {
             //Variable para identificar si se encontró y resolvió algún vértice
@@ -415,13 +470,21 @@ namespace CWP
 
             for (int i = 0; i < VERTICES.Length; i++)
             {
-                //Sí el grado es igual a cero o tiene una conexión consigo mismo
-                //entonces, agregarlo al ordenamiento
-                if (VERTICES[i].grado < 2)
+                //Sí el grado es igual a cero significa que no fue especificada
+                //ninguna arista para el vértice
+                if (VERTICES[i].grado == 0)
+                {
+                    this.etiquetar(VERTICES[i].vertice);
+                    vertices_etiquetados = true;
+                }
+                //Caso contrario, donde el grado es 1 y su conexión es recursiva;
+                //es decir, consigo mismo, simplemente ordenarlo
+                else if (VERTICES[i].grado == 1)
                 {
                     Vertice u = VERTICES[i];
-                    int idx_inicio = u.indice_inicio_lista;
-                    int idx_v = VERTICES_ADYACENTES[idx_inicio];
+
+                    Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[i];
+                    int idx_v = adyacencia_u.First().Key;
 
                     if (idx_v == VERTICES[i].vertice)
                     {
@@ -429,11 +492,11 @@ namespace CWP
                         vertices_etiquetados = true;
                     }
                 }
+                
             }
 
             return vertices_etiquetados;
         }
-
         public void resolver(string ruta_problema)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -478,24 +541,30 @@ namespace CWP
                     else
                     {
                         EXISTE_ADYACENCIA = false;
+                        poblacion = getVerticesNoOrdenados();
                         break;
                     }
                 }
-
-                //Si no existe adyacencia, obtener la población faltante
-                if (!EXISTE_ADYACENCIA) poblacion = getVerticesNoOrdenados();
             }
 
             //Calcular el ancho de corte de cada partición
-            int idx_max_corte = calcularAnchoCorte();
+            //int idx_max_corte = calcularAnchoCorte();
             stopwatch.Stop();
             TIEMPO_RESOLUCION = stopwatch.Elapsed.TotalSeconds;
-            CORTE_MAXIMO = VERTICES[ORDENAMIENTO[idx_max_corte + 1]].ancho_corte;
+            CORTE_MAXIMO = VERTICES[ORDENAMIENTO[IDX_MEJOR]].ancho_corte;
 
-            //Console.WriteLine($"N.Vértices: {NUMERO_VERTICES}. N.Aristas: {NUMERO_ARISTAS}. Corte máximo: {CORTE_MAXIMO}. Tiempo de ejecución: {TIEMPO_RESOLUCION} segundos");
+            ////Console.WriteLine($"N.Vértices: {NUMERO_VERTICES}. N.Aristas: {NUMERO_ARISTAS}. Corte máximo: {CORTE_MAXIMO}. Tiempo de ejecución: {TIEMPO_RESOLUCION} segundos");
             if (MOSTRAR_ORDENAMIENTO) mostrarResultado();
+            if (GUARDAR_SALIDA) guardar_salida();
         }
-
+        private void guardar_salida()
+        {
+            string ruta_salida = RUTA_ENTRADA + ".output";
+            StreamWriter s_writer = new StreamWriter(ruta_salida);
+            s_writer.WriteLine($"VERTICES;ARISTAS;TIEMPO;CORTE");
+            s_writer.WriteLine(this.ToString());
+            s_writer.Close();
+        }
         private bool cruzaParticion(int u, int v, int particion)
         {
             //Verificar si u y v están en diferentes conjuntos respecto a la partición
@@ -503,20 +572,17 @@ namespace CWP
                 || (VERTICES[v].indice <= particion && VERTICES[u].indice > particion);
         }
 
-        private int contarCortes(int particion)
+        private double contarCortes(int particion)
         {
             ///Variable para guardar la cantidad de cortes por partición
-            int corte = 0;
+            double corte = 0;
 
             for (int u = 0; u < NUMERO_VERTICES; u++)
             {
-                //Índice de inicio en el vector
-                int idx_inicio = VERTICES[u].indice_inicio_lista;
-                int idx_final = idx_inicio + VERTICES[u].grado;
-
-                for (int i = idx_inicio; i < idx_final; i++)
+                Dictionary<int, double> adyacencia_u = MATRIZ_ADYACENCIA[u];
+                foreach (var conexion in adyacencia_u)
                 {
-                    int v = VERTICES_ADYACENTES[i];
+                    int v = conexion.Key;
 
                     //Ya que el grafo es no dirigido las aristas son dobles, la siguiente
                     //condición evita realizar revisiones dobles
@@ -524,25 +590,24 @@ namespace CWP
                     {
                         //Sí los vértice se encuentran en lados diferentes de la partición
                         //entonces se incrementa el número de cortes                        
-                        corte += MATRIZ_ADYACENCIA[u, v];
+                        corte += MATRIZ_ADYACENCIA[u][v];
                     }
                 }
             }
 
             return corte;
         }
-
         private int calcularAnchoCorte()
         {
             //Variables para guardar los resultados
-            int corteMaximo = 0;
+            double corteMaximo = 0;
             int indiceCorte = 0;
 
             //Recorrer el ordenamiento para calcular los cortes entre pares de vértices
             for (int i = 0; i < VERTICES_ORDENADOS; i++)
             {
                 //Calcular el ancho de corte entre vértices
-                int corteActual = contarCortes(i);
+                double corteActual = contarCortes(i);
 
                 //Guardar el ancho de corte en el vértice u + 1 para saber que es la conexión
                 //entre el y el anterior (u)
