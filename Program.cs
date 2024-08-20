@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace CWP
@@ -7,11 +8,14 @@ namespace CWP
     {
         static void Main(string[] args)
         {
-            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\graph.txt";
+
+            
+            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\3.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\494_bus.mtx.txt";
-            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\662_bus.mtx.txt";
+            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\662_bus.mtx.txt";
+            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\bcspwr03.mtx.rnd";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\1.txt";
-            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\bcsstk02.mtx.rnd";
+            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\bcsstk02.mtx.rnd";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\s3dkt3m2.mtx.org.txt";
 
             if (args.Length > 0)
@@ -19,30 +23,44 @@ namespace CWP
                 ruta_archivo = args[0];
             }
 
-            StreamWriter stream_writer = new StreamWriter(@"C:\Users\LUIS CASANOVA\source\repos\CWP\output1.csv");
-            string[] hb_problemas = Directory.GetFiles(@"C:\Users\LUIS CASANOVA\source\repos\CWP\HB");
-            stream_writer.WriteLine($"VERTICES;ARISTAS;TIEMPO;CORTE");
-            for (int i = 0; i < hb_problemas.Length; i++)
-            {
-                Console.WriteLine(hb_problemas[i]);
-                CWP2 cwp_solver = new CWP2(false);
-                cwp_solver.resolver(hb_problemas[i]);
+            CWPC cwp_solver = new CWPC();
+            cwp_solver.resolver(ruta_archivo, "");
+            Console.WriteLine(cwp_solver.ToString());
 
-                stream_writer.WriteLine(cwp_solver.ToString());
-            }
-
-            stream_writer.Close();
-
-            //CWP2 cwp_solver = new CWP2(false, ';');
-            //CWP2 cwp_solver = new CWP2(false, ' ', true);
-            //cwp_solver.resolver(ruta_archivo);
+            //CWP4 cwp_solver = new CWP4(false, ' ');
+            //cwp_solver.segmentar(ruta_archivo);
             //Console.WriteLine(cwp_solver.ToString());
 
-            //CWPC cwp_solver_c = new CWPC();
-            //cwp_solver_c.resolver(ruta_archivo, "SA");
+            //CWP3 cwp_solver3 = new CWP3(!false, ' ');
+            //cwp_solver3.segmentar(ruta_archivo, true, 2, 1000);
+            //Console.WriteLine(cwp_solver3.ToString());
 
-            //CWPD cwpd_solver = new CWPD(1000);
-            //cwpd_solver.resolver(ruta_archivo);
+            //CWP2 cwp_solver2 = new CWP2(!false, ' ');
+            //cwp_solver2.parsear_problema(ruta_archivo);
+            ////cwp_solver2.resolver(ruta_archivo);
+            ////Console.WriteLine(cwp_solver2.ToString());
+            //cwp_solver2.testOrdenamiento(cwp_solver3.ORDENAMIENTO);
+
+
+            //Subgrafo sg = new Subgrafo(cwp_solver2.get_MA(), cwp_solver2.get_Vertices(), 0, true);
+            //sg.resolver();
+
+            //for (int i = 10; i < 11; i++)
+            //{
+            //    StreamWriter stream_writer = new StreamWriter(@$"C:\Users\LUIS CASANOVA\source\repos\CWP\output{i}.csv");
+            //    string[] hb_problemas = Directory.GetFiles(@"C:\Users\LUIS CASANOVA\source\repos\CWP\HB");
+            //    stream_writer.WriteLine($"VERTICES;ARISTAS;TIEMPO;CORTE");
+            //    for (int j = 0; j < hb_problemas.Length; j++)
+            //    {
+            //        Console.WriteLine(hb_problemas[j]);
+            //        CWP3 cwp_solver = new CWP3(true, ' ');
+            //        cwp_solver.segmentar(hb_problemas[j], 4);
+
+            //        stream_writer.WriteLine(cwp_solver.ToString());
+            //    }
+
+            //    stream_writer.Close();
+            //}
 
             Console.Read();
         }

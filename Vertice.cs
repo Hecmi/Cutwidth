@@ -10,6 +10,7 @@ namespace CWP
     {
         //Datos generales del vértice
         public int vertice;
+        public int vertice_particion;
         public int grado;
 
         public int grado_iterativo;
@@ -37,6 +38,7 @@ namespace CWP
         public Vertice(int vertice)
         {
             this.vertice = vertice;
+            this.vertice_particion = vertice;
             this.grado = 0;
             this.offset = 0;
 

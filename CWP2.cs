@@ -58,6 +58,8 @@ namespace CWP
             GUARDAR_SALIDA = guardar_salida;
         }
 
+        public Vertice[] get_Vertices() { return VERTICES; }
+        public Dictionary<int, Dictionary<int, double>> get_MA() { return MATRIZ_ADYACENCIA; }
         public int get_NumeroVertices() { return NUMERO_VERTICES; }
         public int get_NumeroAristas() { return NUMERO_ARISTAS; }
         public double get_TiempoResolucion() { return TIEMPO_RESOLUCION; }
@@ -66,7 +68,7 @@ namespace CWP
             return $"{NUMERO_VERTICES};{NUMERO_ARISTAS};{TIEMPO_RESOLUCION};{CORTE_MAXIMO}";
         }
 
-        private bool parsear_problema(string ruta_archivo)
+        public bool parsear_problema(string ruta_archivo)
         {
             //Verificar que la ruta exista
             if (!File.Exists(ruta_archivo))
@@ -155,12 +157,12 @@ namespace CWP
                         return false;
                     }
 
-                    //if (elementos_linea.Length == 3 &&
-                    //  !int.TryParse(elementos_linea[2], out peso))
-                    //{
-                    //    Console.WriteLine($"El formato del peso en la línea {linea_actual} no es correcto.");
-                    //    return false;
-                    //}
+                    if (elementos_linea.Length == 3 &&
+                      !int.TryParse(elementos_linea[2], out peso))
+                    {
+                        Console.WriteLine($"El formato del peso en la línea {linea_actual} no es correcto.");
+                        return false;
+                    }
                 }
                 else
                 {
@@ -319,7 +321,21 @@ namespace CWP
 
             return vertices_adyacentes;
         }
+        private void incrementarCorte(int idx_inicio, int idx_final, double incremento)
+        {
+            for (int i = idx_inicio; i < idx_final; i++)
+            {
+                VERTICES[ORDENAMIENTO[i + 1]].ancho_corte += incremento;
 
+                //Al incrementar el ancho de corte, determinar si es el corte que 
+                //representa el valor máximo
+                if (VERTICES[ORDENAMIENTO[i + 1]].ancho_corte > MEJOR_CORTE)
+                {
+                    IDX_MEJOR = ORDENAMIENTO[i + 1];
+                    MEJOR_CORTE = VERTICES[IDX_MEJOR].ancho_corte;
+                }
+            }
+        }
         private void recalcularCorte(int idx_u)
         {
             //Obtener los vértices adyacentes a u
@@ -333,10 +349,6 @@ namespace CWP
                 int idx_v = conexion.Key;
                 Vertice v = VERTICES[idx_v];
 
-                //Verificar si ya ha sido etiquetado en conjunto a su adyacencia, para no 
-                //seguir con el proceso
-                if (v.completado) continue;
-
                 //Verificar que esté en el ordenamiento (etiquetado)
                 if (v.visitado)
                 { 
@@ -349,18 +361,19 @@ namespace CWP
                     VERTICES[idx_u].disminuirGrado();
                     VERTICES[idx_v].disminuirGrado();
 
-                    for (int i = idx_inicio; i < VERTICES_ORDENADOS; i++)
-                    {
-                        VERTICES[ORDENAMIENTO[i]].ancho_corte += conexion.Value;
+                    incrementarCorte(idx_inicio, VERTICES_ORDENADOS, conexion.Value);
+                    //for (int i = idx_inicio; i < VERTICES_ORDENADOS; i++)
+                    //{
+                    //    VERTICES[ORDENAMIENTO[i + 1]].ancho_corte += conexion.Value;
 
-                        //Al incrementar el ancho de corte, determinar si es el corte que 
-                        //representa el valor máximo
-                        if (VERTICES[ORDENAMIENTO[i]].ancho_corte > MEJOR_CORTE)
-                        {
-                            IDX_MEJOR = i;
-                            MEJOR_CORTE = VERTICES[ORDENAMIENTO[i]].ancho_corte;
-                        }
-                    }
+                    //    //Al incrementar el ancho de corte, determinar si es el corte que 
+                    //    //representa el valor máximo
+                    //    if (VERTICES[ORDENAMIENTO[i + 1]].ancho_corte > MEJOR_CORTE)
+                    //    {
+                    //        IDX_MEJOR = i + 1;
+                    //        MEJOR_CORTE = VERTICES[ORDENAMIENTO[i + 1]].ancho_corte;
+                    //    }
+                    //}
                 }
             }
         }
@@ -548,10 +561,10 @@ namespace CWP
             }
 
             //Calcular el ancho de corte de cada partición
-            //int idx_max_corte = calcularAnchoCorte();
+            //int IDX_MEJOR = calcularAnchoCorte();
             stopwatch.Stop();
             TIEMPO_RESOLUCION = stopwatch.Elapsed.TotalSeconds;
-            CORTE_MAXIMO = VERTICES[ORDENAMIENTO[IDX_MEJOR]].ancho_corte;
+            CORTE_MAXIMO = VERTICES[IDX_MEJOR].ancho_corte;
 
             ////Console.WriteLine($"N.Vértices: {NUMERO_VERTICES}. N.Aristas: {NUMERO_ARISTAS}. Corte máximo: {CORTE_MAXIMO}. Tiempo de ejecución: {TIEMPO_RESOLUCION} segundos");
             if (MOSTRAR_ORDENAMIENTO) mostrarResultado();
@@ -620,7 +633,7 @@ namespace CWP
                 if (corteActual > corteMaximo)
                 {
                     corteMaximo = corteActual;
-                    indiceCorte = i;
+                    indiceCorte = ORDENAMIENTO[i + 1];
                 }
             }
 
@@ -719,10 +732,24 @@ namespace CWP
             {
                 if (x + 1 < VERTICES_ORDENADOS)
                 {
-                    Console.WriteLine($"{ORDENAMIENTO[x]},  {ORDENAMIENTO[x + 1]}, CORTE: {VERTICES[ORDENAMIENTO[x + 1]].ancho_corte}");
+                    Console.WriteLine($"IDX_MEJOR = {IDX_MEJOR}, {ORDENAMIENTO[x]},  {ORDENAMIENTO[x + 1]}, CORTE: {VERTICES[ORDENAMIENTO[x + 1]].ancho_corte}");
                 }
             }
+            Console.WriteLine(MEJOR_CORTE+"");
+        }
 
+        public void testOrdenamiento(int []ordenamiento)
+        {
+            VERTICES_ORDENADOS = 0;
+            IDX_MEJOR = 0;
+            CORTE_MAXIMO = 0;
+
+            for(int i = 0; i < ordenamiento.Length; i++)
+            {
+                etiquetar(ordenamiento[VERTICES_ORDENADOS]);
+            }
+
+            Console.WriteLine(VERTICES[calcularAnchoCorte()].ancho_corte + "");
         }
     }
 }
