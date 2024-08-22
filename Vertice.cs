@@ -24,7 +24,7 @@ namespace CWP
         
         //Variables de control del algoritmo
         //Índice en el ordenamiento
-        public int indice;
+        public int indice_ordenamiento;
         //Ancho de corte entre el vértice y el anterior en el ordenamiento
         public double ancho_corte;
         //Control de los vértices que han sido ordenados (visitados)
@@ -53,7 +53,7 @@ namespace CWP
             this.ancho_corte = 0;
         }
 
-        public void incrementar_adyacencia(int peso)
+        public void incrementar_adyacencia(double peso)
         {
             this.peso_org += peso;
             this.peso += peso;
@@ -65,10 +65,10 @@ namespace CWP
         public void etiquetar(int indice)
         {
             this.visitado = true;
-            this.indice = indice;
+            this.indice_ordenamiento = indice;
         }
 
-        public void disminuirGrado()
+        public void disminuir_grado()
         {            
             if (--this.grado_iterativo == 0)
             {

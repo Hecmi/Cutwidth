@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CWP
 {
-    class CWP
+    class CWP1
     {
         //MATRIZ DE ADYACENCIA (CONTIENE EL PESO DE LAS CONEXIONES 
         //ENTRE VÉRTICES)
@@ -35,7 +35,7 @@ namespace CWP
         double CORTE_MAXIMO;
         double TIEMPO_RESOLUCION;
 
-        public CWP(bool mostrar_ordenamiento)
+        public CWP1(bool mostrar_ordenamiento)
         {
             MOSTRAR_ORDENAMIENTO = mostrar_ordenamiento;
         }
@@ -501,8 +501,8 @@ namespace CWP
         private bool cruzaParticion(int u, int v, int particion)
         {
             //Verificar si u y v están en diferentes conjuntos respecto a la partición
-            return (VERTICES[u].indice <= particion && VERTICES[v].indice > particion) 
-                || (VERTICES[v].indice <= particion && VERTICES[u].indice > particion);
+            return (VERTICES[u].indice_ordenamiento <= particion && VERTICES[v].indice_ordenamiento > particion) 
+                || (VERTICES[v].indice_ordenamiento <= particion && VERTICES[u].indice_ordenamiento > particion);
         }
 
         private int contarCortes(int particion)

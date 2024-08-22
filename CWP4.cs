@@ -361,12 +361,12 @@ namespace CWP
                 {
                     //El índice de inicio, donde se empezará a recalcular es el 
                     //del vértice adyacente hasta u (v...u)
-                    int idx_inicio = v.indice;
+                    int idx_inicio = v.indice_ordenamiento;
 
                     //Disminuir el grado del vértice que presenta la conexión
                     //y al que está conectado (v...u)
-                    VERTICES[idx_u].disminuirGrado();
-                    VERTICES[idx_v].disminuirGrado();
+                    VERTICES[idx_u].disminuir_grado();
+                    VERTICES[idx_v].disminuir_grado();
 
                     for (int i = idx_inicio; i < VERTICES_ORDENADOS; i++)
                     {

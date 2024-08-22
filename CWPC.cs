@@ -41,7 +41,7 @@ namespace CWP
         {
             ITERACION_ACTUAL = 0;
             NUMERO_SOLUCIONES = 10;
-            NUMERO_COMBINACIONES = 1000;
+            NUMERO_COMBINACIONES = 10;
         }
 
         private bool parsear_problema(string ruta_archivo)
@@ -235,7 +235,7 @@ namespace CWP
 
             for (int p = 0; p < NUMERO_VERTICES; p++)
             {
-                corteActual = evaluarParticion(indice, p);
+                corteActual = evaluarParticion(opciones, indice, p);
 
                 if (corteActual > corteMaximo)
                 {
@@ -263,7 +263,7 @@ namespace CWP
 
                     //Ya que el grafo es no dirigido las aristas son dobles, la siguiente
                     //condición evita realizar revisiones dobles
-                    if (v > u && cruzaParticion(indice, u, v, particion))
+                    if (v > u && cruzaParticion(opciones, indice, u, v, particion))
                     {
                         //Sí los vértice se encuentran en lados diferentes de la partición
                         //entonces se incrementa el número de cortes                        
@@ -442,6 +442,7 @@ namespace CWP
             for (int i = 0; i < NUMERO_SOLUCIONES; i++)
             {
                 simulated_annealing(i);
+                Console.WriteLine(calcularAnchoCorte(SOLUCIONES, i));
             }
             
             int menor_corte = int.MaxValue;

@@ -90,8 +90,11 @@ namespace CWP
             //grafo a resolver
             if ((linea = sreader.ReadLine()) != null)
             {
-                //Obtener el arreglo separado por un caracter vacío
+                //Obtener el arreglo separado por el caracter especificado
                 elementos_linea = linea.Split(DELIMITADOR);
+
+                //Verificar que contenga el formato correcto:
+                //(número de vértices repetido, número de aristas)
                 if (elementos_linea.Length != 3 ||
                   !int.TryParse(elementos_linea[0], out NUMERO_VERTICES) ||
                   !int.TryParse(elementos_linea[2], out NUMERO_ARISTAS))
@@ -117,7 +120,7 @@ namespace CWP
                 {
                     MATRIZ_ADYACENCIA[i] = new Dictionary<int, double>();                    
 
-                    ORDENAMIENTO[i] = i;
+                    ORDENAMIENTO[i] = 0;
                     VERTICES[i] = new Vertice(i);
                 }
             }
@@ -185,7 +188,6 @@ namespace CWP
 
             //Cerrar el lector
             sreader.Close();
-
             return true;
         }
         private void mostrarAdyacencia()
@@ -354,26 +356,14 @@ namespace CWP
                 { 
                     //El índice de inicio, donde se empezará a recalcular es el 
                     //del vértice adyacente hasta u (v...u)
-                    int idx_inicio = v.indice;
+                    int idx_inicio = v.indice_ordenamiento;
 
                     //Disminuir el grado del vértice que presenta la conexión
                     //y al que está conectado (v...u)
-                    VERTICES[idx_u].disminuirGrado();
-                    VERTICES[idx_v].disminuirGrado();
+                    VERTICES[idx_u].disminuir_grado();
+                    VERTICES[idx_v].disminuir_grado();
 
                     incrementarCorte(idx_inicio, VERTICES_ORDENADOS, conexion.Value);
-                    //for (int i = idx_inicio; i < VERTICES_ORDENADOS; i++)
-                    //{
-                    //    VERTICES[ORDENAMIENTO[i + 1]].ancho_corte += conexion.Value;
-
-                    //    //Al incrementar el ancho de corte, determinar si es el corte que 
-                    //    //representa el valor máximo
-                    //    if (VERTICES[ORDENAMIENTO[i + 1]].ancho_corte > MEJOR_CORTE)
-                    //    {
-                    //        IDX_MEJOR = i + 1;
-                    //        MEJOR_CORTE = VERTICES[ORDENAMIENTO[i + 1]].ancho_corte;
-                    //    }
-                    //}
                 }
             }
         }
@@ -581,8 +571,8 @@ namespace CWP
         private bool cruzaParticion(int u, int v, int particion)
         {
             //Verificar si u y v están en diferentes conjuntos respecto a la partición
-            return (VERTICES[u].indice <= particion && VERTICES[v].indice > particion)
-                || (VERTICES[v].indice <= particion && VERTICES[u].indice > particion);
+            return (VERTICES[u].indice_ordenamiento <= particion && VERTICES[v].indice_ordenamiento > particion)
+                || (VERTICES[v].indice_ordenamiento <= particion && VERTICES[u].indice_ordenamiento > particion);
         }
 
         private double contarCortes(int particion)
