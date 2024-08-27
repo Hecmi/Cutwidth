@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CWP.Clases
+namespace CWP.PSO
 {
-    class Grafo
+    public class PGrafo
     {
         //VARIABLES DE CONTROL
         public int NUMERO_VERTICES { get; set; }
-        public int NUMERO_ARISTAS { get; set; } 
+        public int NUMERO_ARISTAS { get; set; }
 
         //MATRIZ DE ADYACENCIA (CONTIENE EL PESO DE LAS CONEXIONES 
         //ENTRE VÉRTICES)
@@ -20,7 +20,7 @@ namespace CWP.Clases
         public Vertice[] VERTICES { get; set; }
         public int[] ORDENAMIENTO { get; set; }
 
-        public Grafo(int numero_vertices, int numero_aristas)
+        public PGrafo(int numero_vertices, int numero_aristas)
         {
             //Inicializar las variables para la resolución
             NUMERO_VERTICES = numero_vertices;

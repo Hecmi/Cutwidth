@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using CWP.Clases;
+using CWP.PSO;
 
 namespace CWP
 {
@@ -12,35 +13,32 @@ namespace CWP
 
             
             string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\3.txt";
-            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\494_bus.mtx.txt";
+            //ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\494_bus.mtx.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\662_bus.mtx.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\bcspwr03.mtx.rnd";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\1.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\bcsstk02.mtx.rnd";
-            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\s3dkt3m2.mtx.org.txt";
+            //ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\s3dkt3m2.mtx.org.txt";
 
             if (args.Length > 0)
             {
                 ruta_archivo = args[0];
             }
 
-            //CW cwp_solver = new CW();
-            //cwp_solver.resolver();
+            CWP.PSO.CWP cwp_solver = new CWP.PSO.CWP(ruta_archivo, ' ', false, "");
+            cwp_solver.resolver2();
             //Console.WriteLine(cwp_solver.ToString());
 
-            //CWP2 cwp_solver2 = new CWP2(true, ' ');            
-            //cwp_solver2.resolver(ruta_archivo);
-            //Console.WriteLine(cwp_solver2.ToString());
 
-            //CWP2 cwp_solver3 = new CWP2(false, ' ');
-            //cwp_solver3.resolver(ruta_archivo);
-            //Console.WriteLine(cwp_solver3.ToString());
+            //StreamWriter stream_writer = new StreamWriter(@$"C:\Users\LUIS CASANOVA\source\repos\CWP\out2.json");
+            //string[] hb_problemas = Directory.GetFiles(@"C:\Users\LUIS CASANOVA\source\repos\CWP\HB");
 
-            ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\0.txt";
+            //CW cwp_solver = new CW(ruta_archivo, ' ', false, "");
+            //cwp_solver.resolver();
+            //Console.WriteLine(cwp_solver.ToString());
+            ////stream_writer.WriteLine(cwp_solver.formar_json());
 
-            CW cwp_solver = new CW(ruta_archivo, ' ', false, false);
-            cwp_solver.resolver();
-            Console.WriteLine(cwp_solver.ToString());
+            //stream_writer.Close();
 
             //CWP4 cwp_solver = new CWP4(false, ' ');
             //cwp_solver.segmentar(ruta_archivo);

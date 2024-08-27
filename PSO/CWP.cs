@@ -6,27 +6,27 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace CWP.Clases
+namespace CWP.PSO
 {
-    public class CW
+    public class CWP
     {
-        Grafo GRAFO;
+        public PGrafo GRAFO;
 
         //REFERENCIAS PARA ACCEDER RAPIDAMENTE A LAS VARIABLES DEL GRAFO
         Dictionary<int, Dictionary<int, double>> MATRIZ_ADYACENCIA => GRAFO.MATRIZ_ADYACENCIA;
-        int NUMERO_VERTICES => GRAFO.NUMERO_VERTICES;
-        int NUMERO_ARISTAS  => GRAFO.NUMERO_ARISTAS;
-        Vertice [] VERTICES => GRAFO.VERTICES;
-        int[] ORDENAMIENTO => GRAFO.ORDENAMIENTO;
+        public int NUMERO_VERTICES => GRAFO.NUMERO_VERTICES;
+        public int NUMERO_ARISTAS => GRAFO.NUMERO_ARISTAS;
+        public Vertice[] VERTICES => GRAFO.VERTICES;
+        public int[] ORDENAMIENTO => GRAFO.ORDENAMIENTO;
 
         //VARIABLES DE CONTROL PARA LA RESOLUCIÓN
         //ORDENAMIENTO DE SALIDA (SOLO CONTIENE LOS ÍNDICES DE LOS VÉRTICES)
-        int VERTICES_ORDENADOS;
+        public int VERTICES_ORDENADOS;
 
         //VARIABLES DE SALIDA
-        int IDX_MEJOR;
-        double MEJOR_CORTE;
-        double TIEMPO_RESOLUCION;
+        public int IDX_MEJOR;
+        public double MEJOR_CORTE;
+        public double TIEMPO_RESOLUCION;
 
         //VARIABLES DEFINIDAS POR EL USUARIO
         string RUTA_ARCHIVO;
@@ -34,7 +34,7 @@ namespace CWP.Clases
         bool GUARDAR_SALIDA;
         bool MOSTRAR_ORDENAMIENTO;
 
-        public CW(string ruta_archivo, char delimitador, bool mostrar_ordenamiento, string ruta_salida)
+        public CWP(string ruta_archivo, char delimitador, bool mostrar_ordenamiento, string ruta_salida)
         {
             //Inicializar las variables definidas por el usuario
             MOSTRAR_ORDENAMIENTO = mostrar_ordenamiento;
@@ -44,9 +44,9 @@ namespace CWP.Clases
             GUARDAR_SALIDA = !string.IsNullOrEmpty(RUTA_SALIDA);
 
             //Lee el archivo, envíando por referencia el grafo no instanciado
-            Archivos.procesar_archivo(ref GRAFO, ruta_archivo, delimitador);
+            PArchivo.procesar_archivo(ref GRAFO, ruta_archivo, delimitador);
         }
-        
+
         private double calcular_complejidad(int idx_u)
         {
             double complejidad = 0;
@@ -164,7 +164,7 @@ namespace CWP.Clases
                     VERTICES[idx_u].disminuir_grado();
                     VERTICES[idx_v].disminuir_grado();
 
-                    incrementar_corte(idx_inicio, VERTICES_ORDENADOS, conexion.Value);                  
+                    incrementar_corte(idx_inicio, VERTICES_ORDENADOS, conexion.Value);
                 }
             }
         }
@@ -306,7 +306,7 @@ namespace CWP.Clases
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-                   
+
             VERTICES_ORDENADOS = 0;
 
             //Repetir el proceso de selección y ordenamiento mientras existan vértices
@@ -340,7 +340,7 @@ namespace CWP.Clases
                     //y por lo tanto el problema está formado por varios grafos
                     if (v != null)
                     {
-                         this.etiquetar(v.vertice); 
+                        this.etiquetar(v.vertice);
                     }
                     else
                     {
@@ -356,7 +356,7 @@ namespace CWP.Clases
             TIEMPO_RESOLUCION = stopwatch.Elapsed.TotalSeconds;
 
             if (MOSTRAR_ORDENAMIENTO) mostrar_resultado();
-            if (GUARDAR_SALIDA) Archivos.guardar_salida(ToString(), $@"{RUTA_SALIDA}\output.csv");
+            if (GUARDAR_SALIDA) PArchivo.guardar_salida(ToString(), $@"{RUTA_SALIDA}\output.csv");
         }
 
         //MergeSort
@@ -455,18 +455,18 @@ namespace CWP.Clases
             }
             //Console.WriteLine($"CORTE MÁXIMO = {MEJOR_CORTE} EN [{VERTICES[IDX_MEJOR - 1].vertice} - {VERTICES[IDX_MEJOR].vertice}]");
         }
-        public void test_ordenamiento(int[] ordenamiento)
+        public double test_ordenamiento(int[] ordenamiento)
         {
             VERTICES_ORDENADOS = 0;
             IDX_MEJOR = 0;
-            MEJOR_CORTE  = 0;
+            MEJOR_CORTE = 0;
 
             for (int i = 0; i < ordenamiento.Length; i++)
             {
                 etiquetar(ordenamiento[VERTICES_ORDENADOS]);
             }
 
-            Console.WriteLine(VERTICES[IDX_MEJOR].ancho_corte + "");
+            return MEJOR_CORTE;
         }
         public override string ToString()
         {
@@ -477,17 +477,48 @@ namespace CWP.Clases
         public string formar_json()
         {
             //Crear un objeto que combine todas las partes
-            var data = new {
+            var data = new
+            {
                 MA = MATRIZ_ADYACENCIA,
                 ORDENAMIENTO = ORDENAMIENTO,
                 VERTICES = VERTICES
             };
-                      
-            JsonSerializerOptions options = new JsonSerializerOptions {
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
                 WriteIndented = true
             };
 
             return JsonSerializer.Serialize(data, options);
+        }
+        public void resolver2()
+        {
+            //Crear e inicializar el PSO
+            PSO pso = new PSO(30, 200, this);
+            pso.ejecutar();
+
+            //Obtener el mejor ordenamiento encontrado por PSO
+            var mejorOrdenamiento = pso.get_mejor_posicion();
+            var mejorCosto = pso.get_mejor_costo();
+
+            Console.WriteLine($"Mejor costo encontrado: {mejorCosto}");
+
+            //Opcionalmente, muestra el mejor ordenamiento encontrado
+            if (MOSTRAR_ORDENAMIENTO)
+            {
+                Console.WriteLine("Mejor ordenamiento:");
+                foreach (var idx in mejorOrdenamiento)
+                {
+                    Console.Write($"{idx} ");
+                }
+                Console.WriteLine();
+            }
+
+            //Guardar el resultado en el archivo de salida
+            if (GUARDAR_SALIDA)
+            {
+                PArchivo.guardar_salida(ToString(), $@"{RUTA_SALIDA}\output.csv");
+            }
         }
     }
 }

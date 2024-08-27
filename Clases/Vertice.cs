@@ -9,7 +9,7 @@ namespace CWP
     public class Vertice
     {
         //Datos generales del vértice
-        public int vertice;
+        public int vertice { get; set; }
         public int vertice_particion;
         public int grado;
 
@@ -24,9 +24,9 @@ namespace CWP
         
         //Variables de control del algoritmo
         //Índice en el ordenamiento
-        public int indice_ordenamiento;
+        public int indice_ordenamiento { get; set; }
         //Ancho de corte entre el vértice y el anterior en el ordenamiento
-        public double ancho_corte;
+        public double ancho_corte { get; set; }
         //Control de los vértices que han sido ordenados (visitados)
         public bool visitado;
         //Control de los vértices que ya han sido definidos con todas sus conexiones
