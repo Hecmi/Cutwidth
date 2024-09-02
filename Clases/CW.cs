@@ -455,18 +455,33 @@ namespace CWP.Clases
             }
             //Console.WriteLine($"CORTE MÁXIMO = {MEJOR_CORTE} EN [{VERTICES[IDX_MEJOR - 1].vertice} - {VERTICES[IDX_MEJOR].vertice}]");
         }
+        public int [] get_ordenamiento()
+        {
+            return ORDENAMIENTO;
+        }
+
         public void test_ordenamiento(int[] ordenamiento)
         {
             VERTICES_ORDENADOS = 0;
             IDX_MEJOR = 0;
             MEJOR_CORTE  = 0;
 
+            for (int i = 0; i < VERTICES.Length; i++)
+            {
+                VERTICES[i].visitado = false;
+                VERTICES[i].completado = false;
+                VERTICES[i].grado_iterativo = VERTICES[i].grado;
+                VERTICES[i].ancho_corte = 0;
+                VERTICES[i].peso = VERTICES[i].peso_org;
+            }
+
+
             for (int i = 0; i < ordenamiento.Length; i++)
             {
                 etiquetar(ordenamiento[VERTICES_ORDENADOS]);
             }
 
-            Console.WriteLine(VERTICES[IDX_MEJOR].ancho_corte + "");
+            Console.WriteLine($"ORD: {String.Join(',', ordenamiento)}, {VERTICES[IDX_MEJOR].ancho_corte}");
         }
         public override string ToString()
         {
@@ -484,6 +499,24 @@ namespace CWP.Clases
             };
                       
             JsonSerializerOptions options = new JsonSerializerOptions {
+                WriteIndented = true
+            };
+
+            return JsonSerializer.Serialize(data, options);
+        }
+
+        public string formar_json(int [] ORDENAMIENTO)
+        {
+            //Crear un objeto que combine todas las partes
+            var data = new
+            {
+                MA = MATRIZ_ADYACENCIA,
+                ORDENAMIENTO = ORDENAMIENTO,
+                VERTICES = VERTICES
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
                 WriteIndented = true
             };
 

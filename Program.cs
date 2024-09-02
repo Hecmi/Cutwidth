@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using CWP.Clases;
-using CWP.PSO;
+using CWP.CWP_Combinacional;
 
 namespace CWP
 {
@@ -12,9 +12,10 @@ namespace CWP
         {
 
             
-            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\3.txt";
-            //ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\494_bus.mtx.txt";
-            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\662_bus.mtx.txt";
+            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\3.txt";
+            //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\494_bus.mtx.txt";
+            //ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\4.txt";
+            string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\662_bus.mtx.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\HB\bcspwr03.mtx.rnd";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\1.txt";
             //string ruta_archivo = @"C:\Users\LUIS CASANOVA\source\repos\CWP\Pruebas\bcsstk02.mtx.rnd";
@@ -25,48 +26,18 @@ namespace CWP
                 ruta_archivo = args[0];
             }
 
-            CWP.PSO.CWP cwp_solver = new CWP.PSO.CWP(ruta_archivo, ' ', false, "");
-            cwp_solver.resolver2();
-            //Console.WriteLine(cwp_solver.ToString());
+            CWP.Clases.CW cw_trayectorial = new Clases.CW(ruta_archivo, ' ', true, "");
+            cw_trayectorial.resolver();
+            Console.WriteLine(cw_trayectorial.ToString());
 
+            StreamWriter sw = new StreamWriter(@"C:\Users\LUIS CASANOVA\source\repos\CWP\prueba.json");
+            sw.WriteLine(cw_trayectorial.formar_json());
+            sw.Close();
 
-            //StreamWriter stream_writer = new StreamWriter(@$"C:\Users\LUIS CASANOVA\source\repos\CWP\out2.json");
-            //string[] hb_problemas = Directory.GetFiles(@"C:\Users\LUIS CASANOVA\source\repos\CWP\HB");
-
-            //CW cwp_solver = new CW(ruta_archivo, ' ', false, "");
-            //cwp_solver.resolver();
-            //Console.WriteLine(cwp_solver.ToString());
-            ////stream_writer.WriteLine(cwp_solver.formar_json());
-
-            //stream_writer.Close();
-
-            //CWP4 cwp_solver = new CWP4(false, ' ');
-            //cwp_solver.segmentar(ruta_archivo);
-            //Console.WriteLine(cwp_solver.ToString());
-
-            //CWP3 cwp_solver3 = new CWP3(!false, ' ');
-            //cwp_solver3.segmentar(ruta_archivo, true, 2, 1000);
-            //Console.WriteLine(cwp_solver3.ToString());
-
-            //Subgrafo sg = new Subgrafo(cwp_solver2.get_MA(), cwp_solver2.get_Vertices(), 0, true);
-            //sg.resolver();
-
-            //for (int i = 10; i < 11; i++)
-            //{
-            //    StreamWriter stream_writer = new StreamWriter(@$"C:\Users\LUIS CASANOVA\source\repos\CWP\output{i}.csv");
-            //    string[] hb_problemas = Directory.GetFiles(@"C:\Users\LUIS CASANOVA\source\repos\CWP\HB");
-            //    stream_writer.WriteLine($"VERTICES;ARISTAS;TIEMPO;CORTE");
-            //    for (int j = 0; j < hb_problemas.Length; j++)
-            //    {
-            //        Console.WriteLine(hb_problemas[j]);
-            //        CWP3 cwp_solver = new CWP3(true, ' ');
-            //        cwp_solver.segmentar(hb_problemas[j], 4);
-
-            //        stream_writer.WriteLine(cwp_solver.ToString());
-            //    }
-
-            //    stream_writer.Close();
-            //}
+            Console.WriteLine("--------------------------------");
+            
+            CWP_Combinacional.CWP cw = new CWP_Combinacional.CWP(ruta_archivo, ' ', false, "", 100, 1, 100000);
+            cw.resolver();
 
             Console.Read();
         }
