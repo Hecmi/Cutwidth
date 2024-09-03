@@ -481,7 +481,8 @@ namespace CWP.Clases
                 etiquetar(ordenamiento[VERTICES_ORDENADOS]);
             }
 
-            Console.WriteLine($"ORD: {String.Join(',', ordenamiento)}, {VERTICES[IDX_MEJOR].ancho_corte}");
+
+            //Console.WriteLine($"ORD: {String.Join(',', ordenamiento)}, {VERTICES[IDX_MEJOR].ancho_corte}");
         }
         public override string ToString()
         {
@@ -521,6 +522,14 @@ namespace CWP.Clases
             };
 
             return JsonSerializer.Serialize(data, options);
+        }
+
+        public void guardar_json(int [] ORDENAMIENTO)
+        {
+            test_ordenamiento(ORDENAMIENTO);
+            string json = formar_json(this.ORDENAMIENTO);
+
+            Archivos.guardar(json, "./resolucion.json");
         }
     }
 }

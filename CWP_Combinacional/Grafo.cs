@@ -14,11 +14,7 @@ namespace CWP.CWP_Combinacional
 
         //MATRIZ DE ADYACENCIA (CONTIENE EL PESO DE LAS CONEXIONES 
         //ENTRE VÉRTICES)
-        public Dictionary<int, Dictionary<int, double>> MATRIZ_ADYACENCIA { get; set; }
-
-        //ARREGLO QUE CONTIENE TODOS LOS VÉRTICES DEL PROBLEMA
-        public Vertice[] VERTICES { get; set; }
-        public int[] ORDENAMIENTO { get; set; }
+        public Dictionary<int, Dictionary<int, double>> MATRIZ_ADYACENCIA { get; set; }     
 
         public Grafo(int numero_vertices, int numero_aristas)
         {
@@ -27,14 +23,11 @@ namespace CWP.CWP_Combinacional
             NUMERO_ARISTAS = numero_aristas;
 
             MATRIZ_ADYACENCIA = new Dictionary<int, Dictionary<int, double>>();
-            VERTICES = new Vertice[NUMERO_VERTICES];
-            ORDENAMIENTO = new int[NUMERO_VERTICES];
 
             //Inicializar los objetos para la resolución del problema
             for (int i = 0; i < NUMERO_VERTICES; i++)
             {
                 MATRIZ_ADYACENCIA[i] = new Dictionary<int, double>();
-                VERTICES[i] = new Vertice(i);
             }
         }
         public void aumentar_adyacencia(int u, int v, double peso)

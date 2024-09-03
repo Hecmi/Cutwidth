@@ -26,18 +26,23 @@ namespace CWP
                 ruta_archivo = args[0];
             }
 
-            CWP.Clases.CW cw_trayectorial = new Clases.CW(ruta_archivo, ' ', true, "");
-            cw_trayectorial.resolver();
-            Console.WriteLine(cw_trayectorial.ToString());
-
-            StreamWriter sw = new StreamWriter(@"C:\Users\LUIS CASANOVA\source\repos\CWP\prueba.json");
-            sw.WriteLine(cw_trayectorial.formar_json());
-            sw.Close();
-
-            Console.WriteLine("--------------------------------");
+            CWP.Clases.CW cw_trayectorial = new Clases.CW(ruta_archivo, ' ', false, "");
+            //cw_trayectorial.resolver();
+            //cw_trayectorial.test_ordenamiento(new int[] { 2,1,0,4,3,5 });
+            ////Console.WriteLine(cw_trayectorial.ToString());
+            //cw_trayectorial.guardar_json(new int[] { 2, 1, 0, 4, 3, 5 });
+          
+            //Console.WriteLine("--------------------------------");
             
-            CWP_Combinacional.CWP cw = new CWP_Combinacional.CWP(ruta_archivo, ' ', false, "", 100, 1, 100000);
+
+
+
+            CWP_Combinacional.CWP cw = new CWP_Combinacional.CWP(ruta_archivo, ' ', true, "", 100, 1, 5000, 0.9f);
             cw.resolver();
+
+            cw_trayectorial.guardar_json(cw.get_solucion());
+
+
 
             Console.Read();
         }

@@ -129,5 +129,12 @@ namespace CWP.Clases
             s_writer.WriteLine(resultado);
             s_writer.Close();
         }
+
+        public static void guardar(string lineas, string ruta_salida)
+        {
+            StreamWriter s_writer = new StreamWriter(ruta_salida);
+            s_writer.WriteLine(lineas);
+            s_writer.Close();
+        }
     }
 }
