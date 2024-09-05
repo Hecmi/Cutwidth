@@ -531,5 +531,11 @@ namespace CWP.Clases
 
             Archivos.guardar(json, "./resolucion.json");
         }
+
+        public void guardar_mostrar_grafico(int [] ORDENAMIENTO)
+        {
+            guardar_json(ORDENAMIENTO);
+
+        }
     }
 }
